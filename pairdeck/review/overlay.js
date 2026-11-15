@@ -1,6 +1,7 @@
-/* PairDeck review overlay: comment on a slide by dragging a box over it.
+/* PairDeck review overlay: comment on a slide, or ask about it, by dragging a box over it.
    `pairdeck review` injects this into the pages it serves; it is never written into the deck.
-   Comments go to POST /__pairdeck/comments; replies written by `pairdeck resolve` come back through GET /__pairdeck/state. */
+   Comments and questions go to POST /__pairdeck/comments (kind "change" or "question"); replies and answers written by
+   `pairdeck resolve` come back through GET /__pairdeck/state. */
 (function () {
   "use strict";
   var CFG = window.PAIRDECK || {};
@@ -8,7 +9,13 @@
   var API = "/__pairdeck/";
   var POLL_MS = 2500, MIN_DRAG = 8;
   var comments = [], sig = null, isOpen = false, marking = null, draft = null, shownId = null, tab = "slide", busy = false;
-  var panel, fab, countBtn, layer, list, compose, area, where, msg;
+  var panel, fabs, fab, askBtn, countBtn, layer, list, compose, area, where, msg, sendBtn, toastEl, toastTimer;
+  var seen = null; // replies already shown, per comment id: an answer that arrives later gets a notice
+  var SEEN_KEY = "pd-seen:" + (CFG.slug || location.pathname), WIDE_KEY = "pd-wide";
+  var PLACEHOLDER = {
+    change: "What should change? For example: too many words; make the second bar teal.",
+    question: "What do you want to know? For example: where does this number come from? Why this baseline?"
+  };
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -16,6 +23,37 @@
     });
   }
   function $(sel, root) { return (root || document).querySelector(sel); }
+  /* Replies and answers in light Markdown: paragraphs, - and 1. lists, **bold**, *italic*, `code`, [links](https://...).
+     The text is escaped first, so nothing in it can add markup of its own. */
+  function inline(t) {
+    return t.replace(/`([^`]+)`/g, "<code>$1</code>")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:!?]|$)/g, "$1<em>$2</em>")
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+  function md(src) {
+    var out = [], para = [], lst = null;
+    function endPara() { if (para.length) { out.push("<p>" + inline(para.join(" ")) + "</p>"); para = []; } }
+    function endList() {
+      if (!lst) return;
+      out.push("<" + lst.tag + ">" + lst.items.map(function (i) { return "<li>" + inline(i) + "</li>"; }).join("") + "</" + lst.tag + ">");
+      lst = null;
+    }
+    esc(src).split(/\r?\n/).forEach(function (ln) {
+      var m = /^\s*(?:[-*\u2022]|(\d+)[.)])\s+(.*)$/.exec(ln);
+      if (m) {
+        endPara();
+        var tag = m[1] ? "ol" : "ul";
+        if (!lst || lst.tag !== tag) { endList(); lst = { tag: tag, items: [] }; }
+        lst.items.push(m[2]);
+      } else if (!ln.trim()) { endPara(); endList(); }
+      else if (lst && /^\s{2,}/.test(ln)) { lst.items[lst.items.length - 1] += " " + ln.trim(); }
+      else { endList(); para.push(ln.trim()); }
+    });
+    endPara(); endList();
+    return out.join("");
+  }
+  function store(kind) { try { return window[kind]; } catch (_) { return null; } }
   function allSlides() { return Array.prototype.slice.call(document.querySelectorAll(".dk-slide")); }
   function deckEl() { return $(".dk-deck") || document.body; }
   function distinct(nodes) {
@@ -113,11 +151,19 @@
   // ------------------------------------------------------------------ building the UI
 
   function build() {
+    fabs = document.createElement("div");
+    fabs.className = "pd-fabs";
+    askBtn = document.createElement("button");
+    askBtn.type = "button";
+    askBtn.className = "pd-fab pd-ask";
+    askBtn.title = "Ask about a part of this " + UNIT + " (q)";
+    askBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.6"/><path d="M12 17.2h.01"/></svg><span>Ask</span>';
     fab = document.createElement("button");
     fab.type = "button";
     fab.className = "pd-fab";
-    fab.title = "Comment on this " + UNIT + " (c)";
+    fab.title = "Comment on this " + UNIT + ": say what should change (c)";
     fab.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-5 4v-4.3A2.5 2.5 0 0 1 4 13.5z"/><path d="M12 6.5v6M9 9.5h6"/></svg><span>Comment</span>';
+    fabs.append(askBtn, fab);
     countBtn = document.createElement("button");
     countBtn.type = "button";
     countBtn.className = "pd-count";
@@ -128,29 +174,56 @@
     panel.innerHTML =
       '<header class="pd-head"><b>Comments</b><span class="pd-tabs" role="group" aria-label="Which comments">' +
       '<button type="button" data-tab="slide">This slide</button><button type="button" data-tab="all">All</button></span>' +
+      '<button type="button" class="pd-wide" aria-pressed="false" title="Wider panel, for long answers">⇔</button>' +
       '<button type="button" class="pd-x" aria-label="Close comments">×</button></header>' +
-      '<div class="pd-compose" hidden><div class="pd-where"></div>' +
-      '<textarea rows="4" placeholder="What should change? For example: too many words; make the second bar teal."></textarea>' +
+      '<div class="pd-compose" hidden><div class="pd-kind" role="group" aria-label="Comment or question">' +
+      '<button type="button" data-kind="change">Change it</button><button type="button" data-kind="question">Ask about it</button></div>' +
+      '<div class="pd-where"></div>' +
+      '<textarea rows="4"></textarea>' +
       '<div class="pd-row"><button type="button" class="pd-send">Send</button><button type="button" class="pd-cancel">Cancel</button>' +
       '<button type="button" class="pd-redraw">Redraw box</button></div><div class="pd-msg" aria-live="polite"></div></div>' +
       '<div class="pd-list"></div>' +
-      '<footer class="pd-foot">Your comments go to ' + esc(CFG.agent || "the agent") + ' through ' + esc(TOOL) + '. ' +
-      'Press c to comment, Esc to cancel, Ctrl or ⌘ + Enter to send.</footer>';
+      '<footer class="pd-foot">' + esc(CFG.agent || "The agent") + ' reads these through ' + esc(TOOL) + '. A comment changes the ' +
+      UNIT + '; a question gets an answer here. Keys: c comment, q ask, Esc cancel, ⌘ or Ctrl + Enter send.</footer>';
+    toastEl = document.createElement("div");
+    toastEl.className = "pd-toast";
+    toastEl.setAttribute("role", "status");
+    toastEl.hidden = true;
     layer = document.createElement("div");
     layer.className = "pd-layer";
-    document.body.append(layer, fab, countBtn, panel);
+    document.body.append(layer, fabs, countBtn, panel, toastEl);
     list = $(".pd-list", panel);
     compose = $(".pd-compose", panel);
     area = $("textarea", panel);
     where = $(".pd-where", panel);
     msg = $(".pd-msg", panel);
+    sendBtn = $(".pd-send", panel);
+    try { if (store("localStorage") && localStorage.getItem(WIDE_KEY) === "1") document.body.classList.add("pd-wider"); } catch (_) {}
 
-    fab.addEventListener("click", function () { startMark(null); });
+    fab.addEventListener("click", function () { startMark(null, "change"); });
+    askBtn.addEventListener("click", function () { startMark(null, "question"); });
+    $(".pd-wide", panel).addEventListener("click", function () {
+      var on = document.body.classList.toggle("pd-wider");
+      try { localStorage.setItem(WIDE_KEY, on ? "1" : "0"); } catch (_) {}
+      window.dispatchEvent(new Event("resize"));
+      render();
+    });
+    panel.querySelectorAll("[data-kind]").forEach(function (b) {
+      b.addEventListener("click", function () { if (draft) { draft.kind = b.getAttribute("data-kind"); showKind(); drawBoxes(); area.focus(); } });
+    });
+    toastEl.addEventListener("click", function (e) {
+      var id = toastEl.getAttribute("data-id");
+      hideToast();
+      var c = comments.filter(function (x) { return x.id === id; })[0];
+      if (!c || e.target.closest("[data-act=close]")) return;
+      shownId = c.id; tab = "slide"; goTo(c); setOpen(true);
+      setTimeout(function () { var it = list.querySelector('[data-id="' + c.id + '"]'); if (it) it.scrollIntoView({ block: "nearest" }); }, 120);
+    });
     countBtn.addEventListener("click", function () { setOpen(!isOpen); });
     $(".pd-x", panel).addEventListener("click", function () { setOpen(false); });
     $(".pd-send", panel).addEventListener("click", send);
     $(".pd-cancel", panel).addEventListener("click", cancelDraft);
-    $(".pd-redraw", panel).addEventListener("click", function () { startMark(draft && draft.parent); });
+    $(".pd-redraw", panel).addEventListener("click", function () { startMark(draft && draft.parent, draft ? draft.kind : "change"); });
     panel.querySelectorAll("[data-tab]").forEach(function (b) {
       b.addEventListener("click", function () { tab = b.getAttribute("data-tab"); render(); });
     });
@@ -164,7 +237,9 @@
     document.addEventListener("keydown", function (e) {
       if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return;
       if (e.key === "Escape" && marking) { e.preventDefault(); endMark(); return; }
-      if ((e.key === "c" || e.key === "C") && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); startMark(null); }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "c" || e.key === "C") { e.preventDefault(); startMark(null, "change"); }
+      if (e.key === "q" || e.key === "Q") { e.preventDefault(); startMark(null, "question"); }
     });
     window.addEventListener("resize", drawBoxes);
     document.addEventListener("scroll", drawBoxes, true); // a tall slide scrolls: boxes follow its content
@@ -181,16 +256,18 @@
 
   // ------------------------------------------------------------------ marking a box
 
-  function startMark(parent) {
+  function startMark(parent, kind) {
     if (marking) return;
+    kind = kind === "question" ? "question" : "change";
     if (!isOpen) setOpen(true);
     var ov = document.createElement("div");
-    ov.className = "pd-mark";
-    ov.innerHTML = '<div class="pd-mhint">Drag a box over what you mean · click for the whole ' + UNIT + ' · Esc cancels</div>';
+    ov.className = "pd-mark" + (kind === "question" ? " q" : "");
+    ov.innerHTML = '<div class="pd-mhint">' + (kind === "question" ? "Drag a box over what you are asking about"
+      : "Drag a box over what you mean") + ' · click for the whole ' + UNIT + ' · Esc cancels</div>';
     var R = deckEl().getBoundingClientRect();
     ov.style.left = R.left + "px"; ov.style.top = R.top + "px"; ov.style.width = R.width + "px"; ov.style.height = R.height + "px";
     document.body.append(ov);
-    marking = { ov: ov, box: null, x0: 0, y0: 0, down: false, parent: parent };
+    marking = { ov: ov, box: null, x0: 0, y0: 0, down: false, parent: parent, kind: kind };
     clearBoxes();
     ov.addEventListener("pointerdown", function (e) {
       if (e.button !== 0) return;
@@ -198,7 +275,7 @@
       try { ov.setPointerCapture(e.pointerId); } catch (_) {}
       marking.down = true; marking.x0 = e.clientX; marking.y0 = e.clientY;
       marking.box = document.createElement("div");
-      marking.box.className = "pd-box draft";
+      marking.box.className = "pd-box draft" + (marking.kind === "question" ? " q" : "");
       layer.append(marking.box);
       size(e);
     });
@@ -214,9 +291,9 @@
         under = textUnder(h.el, sr);
         block = blockUnder(h.el, sr);
       }
-      var parent = marking.parent;
+      var parent = marking.parent, kind = marking.kind;
       endMark();
-      openDraft(h, box, under, parent, anchor, block);
+      openDraft(h, box, under, parent, anchor, block, kind);
     });
     ov.addEventListener("click", function (e) { e.stopPropagation(); });
   }
@@ -237,21 +314,32 @@
 
   // ------------------------------------------------------------------ the draft
 
-  function openDraft(h, box, under, parent, anchor, block) {
-    var keep = draft ? area.value : "";
+  function openDraft(h, box, under, parent, anchor, block, kind, text) {
+    var keep = text != null ? text : draft ? area.value : "";
     draft = { slide: h.slide, slide_id: h.id, label: h.label, title: h.title, step: h.step, steps: h.steps, box: box,
               anchor: anchor || null, under: under, block: block || "", parent: parent || null,
-              viewport: [window.innerWidth, window.innerHeight] };
+              kind: kind === "question" ? "question" : "change", viewport: [window.innerWidth, window.innerHeight] };
     compose.hidden = false;
     var place = UNIT === "poster" ? (block ? "<b>" + esc(block) + "</b>" : "the poster")
       : "slide " + h.slide + (h.steps ? ", step " + h.step + " of " + h.steps : "");
-    where.innerHTML = (parent ? "Follow-up to <b>" + esc(parent) + "</b> · " : "New comment · ") + place +
+    where.innerHTML = (parent ? "Follow-up to <b>" + esc(parent) + "</b> · " : "") + place +
       " · " + (box ? "the box" : "the whole " + UNIT) +
       (under ? '<span class="pd-under">' + esc(under) + "</span>" : "");
     area.value = keep;
     msg.textContent = "";
+    showKind();
     render();
     area.focus();
+    if (keep) area.setSelectionRange(keep.length, keep.length);
+  }
+  function showKind() {
+    var q = draft && draft.kind === "question";
+    compose.classList.toggle("q", q);
+    panel.querySelectorAll("[data-kind]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.getAttribute("data-kind") === (q ? "question" : "change")));
+    });
+    area.placeholder = PLACEHOLDER[q ? "question" : "change"];
+    sendBtn.textContent = q ? "Ask" : "Send";
   }
   function cancelDraft() {
     draft = null;
@@ -263,7 +351,7 @@
   function send() {
     if (!draft || busy) return;
     var text = area.value.trim();
-    if (!text) { msg.textContent = "Type the comment first."; area.focus(); return; }
+    if (!text) { msg.textContent = draft.kind === "question" ? "Type the question first." : "Type the comment first."; area.focus(); return; }
     busy = true;
     msg.textContent = "Sending…";
     var body = Object.assign({}, draft, { text: text });
@@ -275,6 +363,7 @@
         area.value = "";
         msg.textContent = "";
         shownId = rec.id;
+        if (seen) seen[rec.id] = 0;
         return poll();
       })
       .catch(function (e) { msg.textContent = "Not sent: " + e.message + ". Is `" + CLI + " review` still running?"; })
@@ -283,23 +372,32 @@
 
   // ------------------------------------------------------------------ the list and the boxes
 
+  function isQ(c) { return c && c.kind === "question"; }
   function statusChip(c) {
     var cls = { "waiting": "st-wait", "with the agent": "st-agent", "answered": "st-done", "kept": "st-kept" }[c.status] || "";
-    return '<span class="pd-chip ' + cls + '">' + esc(c.status) + "</span>";
+    var label = isQ(c) ? ({ "waiting": "sent", "with the agent": "answering…", "kept": "done" }[c.status] || c.status) : c.status;
+    return '<span class="pd-chip ' + cls + '">' + esc(label) + "</span>";
   }
   function itemHTML(c) {
+    var q = isQ(c);
     var replies = (c.replies || []).map(function (r) {
-      return '<div class="pd-reply"><b>' + esc(r.agent || CFG.agent || "Agent") + ":</b> " + esc(r.text) + "</div>";
+      return '<div class="pd-reply"><div class="pd-who">' + esc(r.agent || CFG.agent || "Agent") + "</div>" + md(r.text) + "</div>";
     }).join("");
-    var acts = c.replies && c.replies.length
-      ? '<div class="pd-actions">' + (c.kept ? "" : '<button type="button" data-act="keep" title="Accept the change as made">Keep</button>') +
-        '<button type="button" data-act="follow">Follow up</button></div>' : "";
-    return '<article class="pd-item' + (c.id === shownId ? " is-shown" : "") + '" data-id="' + esc(c.id) + '">' +
-      '<div class="pd-meta"><b>' + esc(c.id) + "</b> · " + (UNIT === "poster" ? esc(c.block || "poster")
-        : "slide " + c.slide + (c.steps ? "." + c.step : "")) +
+    var acts = "";
+    if (c.replies && c.replies.length) {
+      acts = q
+        ? '<div class="pd-actions"><button type="button" data-act="askmore">Ask more</button>' +
+          '<button type="button" data-act="promote" title="Turn this answer into a change to the ' + UNIT + '">Put it in the ' + UNIT + '</button>' +
+          (c.kept ? "" : '<button type="button" data-act="keep" title="The question is settled">Done</button>') + "</div>"
+        : '<div class="pd-actions">' + (c.kept ? "" : '<button type="button" data-act="keep" title="Accept the change as made">Keep</button>') +
+          '<button type="button" data-act="follow">Follow up</button></div>';
+    }
+    return '<article class="pd-item' + (q ? " is-q" : "") + (c.id === shownId ? " is-shown" : "") + '" data-id="' + esc(c.id) + '">' +
+      '<div class="pd-meta"><b>' + esc(c.id) + "</b> · " + (q ? '<span class="pd-kindtag">question</span> · ' : "") +
+      (UNIT === "poster" ? esc(c.block || "poster") : "slide " + c.slide + (c.steps ? "." + c.step : "")) +
       (c.parent ? " · re " + esc(c.parent) : "") + " · " + esc(when(c.time)) + " " + statusChip(c) + "</div>" +
-      '<div class="pd-text"><b>' + esc(c.author || CFG.author || "You") + ":</b> " + esc(c.text) + "</div>" + replies + acts +
-      "</article>";
+      '<div class="pd-text"><b>' + esc(c.author || CFG.author || "You") + (q ? " asks" : "") + ":</b> " + esc(c.text) + "</div>" +
+      replies + acts + "</article>";
   }
   function render() {
     if (!panel) return;
@@ -312,10 +410,11 @@
     $("[data-tab=all]", panel).textContent = "All (" + comments.length + ")";
     list.innerHTML = rows.length ? rows.slice().reverse().map(itemHTML).join("")
       : '<p class="pd-empty">' + (tab === "all" ? "No comments yet." : "No comments on this " + UNIT + " yet.") +
-        " Press <b>Comment</b>, drag a box over what you mean, and type.</p>";
+        " Press <b>Comment</b> to change something, or <b>Ask</b> to ask about it; drag a box over what you mean, and type.</p>";
     var open = comments.filter(function (c) { return c.status !== "answered" && c.status !== "kept"; }).length;
     countBtn.textContent = comments.length ? comments.length + (open ? " · " + open + " open" : "") : "0";
     countBtn.hidden = !comments.length && !isOpen;
+    $(".pd-wide", panel).setAttribute("aria-pressed", String(document.body.classList.contains("pd-wider")));
     drawBoxes();
   }
   function clearBoxes() { layer.querySelectorAll(".pd-box:not(.draft)").forEach(function (b) { b.remove(); }); }
@@ -323,7 +422,7 @@
     var h = here();
     if (!c.box || c.slide !== h.slide) return;
     var R = boxRect(c, h.el), b = document.createElement("div");
-    b.className = "pd-box " + cls;
+    b.className = "pd-box " + cls + (isQ(c) ? " q" : "");
     b.style.left = R.left + "px";
     b.style.top = R.top + "px";
     b.style.width = R.width + "px";
@@ -340,9 +439,9 @@
       // A comment the author accepted (Keep) is settled: its box leaves the slide, and comes back only while
       // the author has that comment selected in the list.
       if (c.status === "kept" && c.id !== shownId) return;
-      if (c.slide === h.slide && c.box) putBox(c, c.id === shownId ? "shown" : "faint", c.id);
+      if (c.slide === h.slide && c.box) putBox(c, c.id === shownId ? "shown" : "faint", c.id + (isQ(c) ? " ?" : ""));
     });
-    if (draft && draft.box && draft.slide === h.slide) putBox(draft, "pending", "new");
+    if (draft && draft.box && draft.slide === h.slide) putBox(draft, "pending", isQ(draft) ? "new ?" : "new");
   }
   function goTo(c) {
     var h = here();
@@ -366,15 +465,49 @@
     }
     shownId = c.id;
     goTo(c);
-    if (act && act.getAttribute("data-act") === "follow") {
+    var a = act && act.getAttribute("data-act");
+    if (a === "follow" || a === "askmore" || a === "promote") {
       var h = here();
-      openDraft(h, c.box, c.under || "", c.id, c.anchor, c.block);
+      openDraft(h, c.box, c.under || "", c.id, c.anchor, c.block, a === "askmore" ? "question" : "change",
+                a === "promote" ? "Put the answer to " + c.id + " on this " + UNIT + "." : null);
       return;
     }
     setTimeout(render, 80);
   }
 
   // ------------------------------------------------------------------ polling and reloads
+
+  function loadSeen() {
+    try { var v = store("sessionStorage") && sessionStorage.getItem(SEEN_KEY); return v ? JSON.parse(v) : null; } catch (_) { return null; }
+  }
+  function saveSeen() { try { sessionStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (_) {} }
+  function noticeAnswers() {
+    var first = seen === null, fresh = [];
+    if (first) seen = {};
+    comments.forEach(function (c) {
+      var n = (c.replies || []).length;
+      if (!first && n > (seen[c.id] || 0)) fresh.push(c);
+      seen[c.id] = n;
+    });
+    saveSeen();
+    if (!fresh.length) return;
+    var c = fresh[fresh.length - 1];
+    var item = isOpen && list.querySelector('[data-id="' + c.id + '"]');
+    if (item) { item.classList.add("is-new"); setTimeout(function () { item.classList.remove("is-new"); }, 2600); }
+    if (item && c.id === shownId) return;
+    showToast(c, fresh.length);
+  }
+  function showToast(c, n) {
+    var who = esc((c.replies[c.replies.length - 1] || {}).agent || CFG.agent || "The agent");
+    toastEl.setAttribute("data-id", c.id);
+    toastEl.innerHTML = "<b>" + who + (isQ(c) ? " answered " : " replied to ") + esc(c.id) + "</b>" +
+      (n > 1 ? " and " + (n - 1) + " more" : "") + '<span class="pd-tq">' + esc(c.text.length > 70 ? c.text.slice(0, 68) + "…" : c.text) +
+      '</span><span class="pd-trow"><button type="button">Show</button><button type="button" data-act="close">Later</button></span>';
+    toastEl.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 15000);
+  }
+  function hideToast() { toastEl.hidden = true; clearTimeout(toastTimer); }
 
   function poll() {
     return fetch(API + "state", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (s) {
@@ -390,6 +523,7 @@
       }
       sig = s.sig;
       render();
+      noticeAnswers();
     }).catch(function () {});
   }
 
@@ -412,6 +546,7 @@
   }
 
   function start() {
+    seen = loadSeen();
     build();
     render();
     // After the engine has shown its first slide (it does so on load).

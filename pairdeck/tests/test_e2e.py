@@ -406,6 +406,37 @@ def run():
     pd("watch", "demo", "--settle", "0.3", "--interval", "0.1", timeout=60)
     ok(any(e["kind"] == "own_edit" and e.get("change") == "added" for e in events()), "a slide the author adds is `own_edit`")
 
+    # a question: answered on the page, never an edit, never style evidence
+    code, _ = http("POST", base + "/__pairdeck/comments", {"text": "x", "slide": 1, "kind": "rant"})
+    ok(code == 400, "a comment's kind is change or question")
+    n_events = len(events())
+    code, body = http("POST", base + "/__pairdeck/comments",
+                      {"text": "Why do you always compare within groups here?", "slide": 3, "kind": "question",
+                       "box": {"x": 0.1, "y": 0.3, "w": 0.4, "h": 0.2}, "under": "93%"})
+    ok(code == 200 and json.loads(body)["kind"] == "question", "the review page takes a question")
+    out = pd("watch", "demo", "--settle", "0.3", "--interval", "0.1", timeout=60)
+    ok("1 question" in out and "# Questions (1)" in out and "## c3 · question · slide 3" in out
+       and "Answer each question (c3)" in out and "Do not edit the deck for a question" in out
+       and "pairdeck qa" not in out and "pairdeck snapshot" not in out,
+       "a batch of questions asks for answers on the page, not edits, QA or a snapshot")
+    ok(len(events()) == n_events, "a question is not style evidence, even with 'always' in it")
+    answer = TMP / "answer.md"
+    answer.write_text("Because the groups differ **before** treatment:\n\n- small stones: 93% vs 87%\n- large stones: 73% vs 69%\n")
+    pd("resolve", "demo", "c3", "--reply-file", str(answer))
+    c3 = [c for c in json.loads(http("GET", base + "/__pairdeck/state")[1])["comments"] if c["id"] == "c3"][0]
+    ok(c3["kind"] == "question" and c3["status"] == "answered" and "- small stones" in c3["replies"][0]["text"],
+       "the answer shows under the question, with its Markdown")
+    http("POST", base + "/__pairdeck/keep", {"id": "c3"})
+    http("POST", base + "/__pairdeck/comments", {"text": "Put the answer to c3 on this deck.", "slide": 3, "parent": "c3"})
+    out = pd("watch", "demo", "--settle", "0.3", "--interval", "0.1", timeout=60)
+    ok("Put this answer in the deck: follow-up to the question c3" in out and "93% vs 87%" in out,
+       "Put it in the deck sends a change that carries the question and its answer")
+    ok(not any(e["kind"] == "kept" and e.get("cid") == "c3" for e in events()), "Done on a question is not `kept` evidence")
+    pd("resolve", "demo", "c4", "Added the two group rates under the chart.")
+    pd("snapshot", "demo", "-m", "c4")
+    out = pd("status", "demo")
+    ok("questions: 1 done" in out, "status counts questions apart from comments")
+
     # one watcher per deck
     w = pd_bg("watch", "demo", "--settle", "60")
     for _ in range(50):
@@ -427,7 +458,7 @@ def run():
     ok("no style evidence waiting" in pd("learn", "demo"), "acked and discarded events leave the queue")
     ok([e for e in events() if e["id"] == pend[0]][0]["discarded"]["why"] == "a test edit", "a discarded event keeps the reason")
     out = pd("status", "demo")
-    ok("review page: http://127.0.0.1" in out and "comments: 1 answered, 1 kept" in out, "status shows the page and the comments")
+    ok("review page: http://127.0.0.1" in out and "comments: 2 answered, 1 kept" in out, "status shows the page and the comments")
     srv.terminate()
     srv.wait(timeout=10)
     ok(not (DATA / "projects" / "demo" / "server.json").exists(), "the review server cleans up when stopped")

@@ -64,7 +64,8 @@ No profile yet: ask the author's name and run `$PP setup --name "…" --agent <y
    tool; Codex: `view_image`) and go through `references/qa.md`. Repeat until clean, then check the facts once more.
 6. **Snapshot:** `$PP snapshot <slug> -m "first build"`.
 7. **Show it.** Start `$PP review <slug>` in the background and give the author its URL. Say in two lines how to comment:
-   zoom with + and − (0 fits, 1 is print size), press **Comment** (or `c`), drag a box, type, Send. Offer to start the loop.
+   zoom with + and − (0 fits, 1 is print size), press **Comment** (or `c`) to ask for a change or **Ask** (or `q`) to ask a
+   question, drag a box, type, Send. Offer to start the loop.
 
 ## The comment loop
 
@@ -90,7 +91,11 @@ The watcher prints one batch and exits 0 (exit 4: snapshot first; exit 5: anothe
 
 1. **Read the batch.** Each comment names its block, the box (fractions of the poster), the words under it, and its thread.
    The author's own edits come as diffs against your last snapshot. Re-read `STYLE.md` if its sha changed.
-2. **For each comment:** edit the poster, then `$PP resolve <slug> <id> "<reply>"`. Add `--stated` when a comment states a
+2. **Questions first** (Ask on the review page, listed under "Questions"): answer each with `$PP resolve <slug> <id>
+   --reply-file answer.md`, from the poster's sources, in the question's language, about 150 words, plain text with `- `
+   bullets. **Do not edit the poster for a question.** If the answer shows the poster leaves something out, end with one
+   line saying so; the author can press **Put it in the poster**. A batch of questions alone needs no QA or snapshot.
+   **For each comment:** edit the poster, then `$PP resolve <slug> <id> "<reply>"`. Add `--stated` when a comment states a
    general preference the watcher did not mark.
 3. **Check:** `$PP qa <slug>`, and look at the whole poster and the close-ups you touched. A fix in one block often moves the
    others: overflow and empty space are checked across the page.

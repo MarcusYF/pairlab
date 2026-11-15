@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-MIT-27709C" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/version-0.1.0-C6952C" alt="version 0.1.0">
+  <img src="https://img.shields.io/badge/version-0.2.0-C6952C" alt="version 0.2.0">
   <img src="https://img.shields.io/badge/python-3.9%2B-6D5398" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Chrome-227828" alt="works with Claude Code, Codex and Chrome">
 </p>
@@ -19,9 +19,10 @@
 You give your agent the material (a paper, a project, the results of an investigation) and it builds a short web deck that
 explains it with pictures that build up step by step, checked slide by slide on screenshots. Then you drag a box over any
 slide in the local review page and type what should change: the agent fixes the deck in the background and replies under your
-comment, and every change you keep, rewrite or undo teaches it your visual style.
+comment, and every change you keep, rewrite or undo teaches it your visual style. Or box a part and ask about it: the answer
+appears right there, and the deck stays as it is.
 
-- **Interactive.** Drag a box on any slide in the local review page and type; your agent fixes the deck in the background and replies under your comment.
+- **Interactive.** Drag a box on any slide in the local review page and type: a change, which your agent makes in the background and replies under, or a question, which it answers on the page.
 - **Adaptive.** Your visual style guide (palette, type, density, how a slide builds) grows from every change you keep, rewrite or undo, and can start from your past decks.
 
 <p align="center">
@@ -77,6 +78,19 @@ is pinned to the figure or text block under it, so it lands on the same marks in
 The agent's reply appears under your comment, in green, and the page reloads by itself when the deck changes on disk. Press
 **Keep** to accept the change as made, **Follow up** to push back. You can also edit the deck's HTML yourself in any editor:
 the watcher sees your edit and compares it with the agent's last version.
+
+## Ask about any part
+
+<p align="center">
+  <img src="docs/img/review-ask.png" width="100%" alt="A question on the review page: a purple box drawn over the two bars of the example's 'Put the groups together, and B wins' slide, and in the panel the question 'Why does B win here when A wins in both groups?' with the agent's answer in green, three bullets on how the treatments got different patients, and Ask more, Put it in the slide and Done buttons.">
+</p>
+
+A deck that reports a finding raises questions: where a number comes from, why this baseline, what a term means. Press
+**Ask** (or `q`), drag a box over the part you mean, and type the question. It goes to your agent in the same loop as a
+comment, with the slide, the box and the words under it, and comes back as an answer under your question, with its sources.
+The deck stays as it is. A notice tells you when an answer arrives, and **⇔** widens the panel for long ones. Under the
+answer, **Ask more** follows up, **Done** closes the question, and **Put it in the slide** turns the answer into a change.
+Questions never teach the style guide: asking about a slide says nothing about how you want it made.
 
 ## A style guide that learns you
 
@@ -165,13 +179,15 @@ low-contrast text, text that scrolls inside a box and slides taller than the win
 
 ```sh
 pairdeck review mydeck             # http://127.0.0.1:<port>/…/index.html with the comment layer; keeps running
-pairdeck watch mydeck              # waits for comments and your edits, prints one batch, exits
+pairdeck watch mydeck              # waits for comments, questions and your edits, prints one batch, exits
 pairdeck resolve mydeck c3 "Labelled each bar; legend removed on slides 3, 4 and 7."
+pairdeck resolve mydeck c4 --reply-file answer.md   # an answer: paragraphs, - bullets, **bold**, `code`, links
 ```
 
 The agent runs `review` and `watch` in the background. `watch` waits until nothing has changed for 8 seconds (`--settle`), so
-several comments arrive as one batch, prints the batch (each comment's slide, step, box, the words under it, and a diff of any
-edit you made to the deck since the agent's snapshot) and exits; that exit wakes the agent. It holds a lock (one watcher per
+several comments arrive as one batch, prints the batch (questions first, then comments, each with its slide, step, box and
+the words under it, and a diff of any edit you made to the deck since the agent's snapshot) and exits; that exit wakes the
+agent. It holds a lock (one watcher per
 deck; `--takeover` moves it), `--once` checks once, and it refuses to start (exit 4) when the agent answered comments and
 changed the deck without a snapshot, so the agent's edits are never read as yours.
 
@@ -235,9 +251,9 @@ The agent never publishes, deploys or sends a deck without your go-ahead.
 | `pairdeck bundle SLUG [-o FILE] [--no-fonts]` / `pairdeck card SLUG` | One self-contained file; a share image |
 | `pairdeck seed PATHS… [--note …]` / `--list` / `--forget ID` | Reads your past decks into the style vault |
 | `pairdeck snapshot SLUG [-m …]` | Records the agent's version of the deck |
-| `pairdeck review SLUG [--port N] [--open]` | Serves the deck with the comment layer on 127.0.0.1 |
-| `pairdeck watch SLUG [--once] [--settle S] [--takeover]` | Waits for comments and your edits, prints one batch, exits |
-| `pairdeck resolve SLUG ID "reply" [--stated]` | Answers a comment; the reply shows on the review page |
+| `pairdeck review SLUG [--port N] [--open]` | Serves the deck with the comment and question layer on 127.0.0.1 |
+| `pairdeck watch SLUG [--once] [--settle S] [--takeover]` | Waits for comments, questions and your edits, prints one batch, exits |
+| `pairdeck resolve SLUG ID "reply" [--reply-file F] [--stated]` | Answers a comment or a question; the reply shows on the review page |
 | `pairdeck learn [SLUG\|--all] [--ack IDS] [--discard IDS --why …]` | Shows style evidence, or marks it learned or not yours |
 
 Exit codes of `watch`: 0 a batch, 1 nothing (with `--once` or `--max-hours`), 2 the deck is missing, 4 unsnapshotted agent

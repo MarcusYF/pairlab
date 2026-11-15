@@ -6,7 +6,8 @@ records its version (`pairdeck snapshot`). The author opens the deck in the loca
 on a slide and types a comment. `pairdeck watch` waits for comments and for the author's own edits to the deck files, lets them
 settle, prints one batch and exits; that exit wakes the agent that started it in the background. The agent fixes the deck,
 answers each comment (`pairdeck resolve`, shown under the comment on the review page), snapshots again, learns from the
-evidence (`pairdeck learn`), and starts `pairdeck watch` again.
+evidence (`pairdeck learn`), and starts `pairdeck watch` again. The author can also box a part and ask a question about it
+(Ask, or the q key): the agent answers under the question on the page and leaves the deck as it is.
 
 `pairdeck seed` reads the author's past decks (.pptx, .pdf, .html) through ../shared/seed_visual.py, so the style guide starts
 close to the author's taste.
@@ -55,7 +56,7 @@ POSTER = os.environ.get("PAIRLAB_FLAVOR") == "poster"
 CLI = "pairposter" if POSTER else "pairdeck"
 TOOL = "PairPoster" if POSTER else "PairDeck"
 UNIT = "poster" if POSTER else "deck"
-VERSION = "0.1.0" if POSTER else "0.1.1"
+VERSION = "0.2.0"  # PairDeck and PairPoster share this program and release together
 POSTER_APP = APP.parent / "pairposter"
 SKILL = (POSTER_APP if POSTER else APP) / "skill"
 ENGINE = SKILL / "assets" / "engine"
@@ -1426,9 +1427,10 @@ def cmd_snapshot(args) -> int:
 
 # comments.jsonl holds one record per line:
 #   {"type": "comment", "id": "c3", "ts", "time", "author", "slide", "slide_id", "label", "title", "step", "steps",
-#    "box": {"x", "y", "w", "h"} (fractions of the slide's content area) or null, "under", "text", "parent"}
+#    "box": {"x", "y", "w", "h"} (fractions of the slide's content area) or null, "under", "text", "parent",
+#    "kind": "change" (the default: fix the deck) or "question" (answer it on the page; the deck stays as it is)}
 #   {"type": "reply", "id": "c3", "ts", "time", "agent", "text"}       written by `pairdeck resolve`
-#   {"type": "keep", "id": "c3", "ts", "time"}                         the author pressed Keep on the review page
+#   {"type": "keep", "id": "c3", "ts", "time"}                         the author pressed Keep (a question: Done)
 
 def read_comment_log(p: Project) -> list[dict]:
     if not p.comments_path.exists():
@@ -1466,6 +1468,7 @@ def comment_threads(p: Project, sent: set | None = None) -> list[dict]:
         t = r.get("type")
         if t == "comment":
             c = dict(r, replies=[], kept=False)
+            c["kind"] = "question" if r.get("kind") == "question" else "change"
             comments.append(c)
             by_id[c["id"]] = c
         elif t == "reply" and r.get("id") in by_id:
@@ -1493,15 +1496,18 @@ def describe_box(c: dict) -> str:
 
 def comment_events(p: Project, threads: list[dict], batch: list[dict]) -> list[dict]:
     """Evidence from comments: `stated` for a comment in this batch that states a general preference, `kept` for every
-    answer the author pressed Keep on. Each fact is recorded once (the `source` key)."""
+    answer the author pressed Keep on. Each fact is recorded once (the `source` key). Questions are not evidence: asking
+    about a slide says nothing about how the author wants it made."""
     events = []
     for c in batch:
+        if c.get("kind") == "question":
+            continue
         if GENERAL.search(c.get("text", "")):
             events.append({"kind": "stated", "project": p.slug, "cid": c["id"], "comment": c["text"],
                            "slide": c.get("slide"), "label": c.get("label", ""), "title": c.get("title", ""),
                            "source": f"{p.slug}:stated:{c['id']}", "how": "the comment's words read as general"})
     for c in threads:
-        if c["kept"]:
+        if c["kept"] and c.get("kind") != "question":
             events.append({"kind": "kept", "project": p.slug, "cid": c["id"], "comment": c["text"],
                            "reply": c["replies"][-1]["text"] if c["replies"] else "", "slide": c.get("slide"),
                            "label": c.get("label", ""), "title": c.get("title", ""), "source": f"{p.slug}:kept:{c['id']}"})
@@ -1619,6 +1625,9 @@ def make_handler(p: Project, root: Path, deck_url: str, port_box: list):
                 parent = body.get("parent")
                 if parent is not None and parent not in known:
                     return self._json(400, {"error": f"unknown comment {parent}"})
+                kind = body.get("kind") or "change"
+                if kind not in ("change", "question"):
+                    return self._json(400, {"error": "kind is change or question"})
 
                 def num(k, d=0):
                     try:
@@ -1630,7 +1639,7 @@ def make_handler(p: Project, root: Path, deck_url: str, port_box: list):
                        "title": str(body.get("title", ""))[:300], "block": str(body.get("block", ""))[:120],
                        "step": max(0, num("step")), "steps": max(0, num("steps")),
                        "box": box, "anchor": anchor, "under": str(body.get("under", ""))[:400], "text": text,
-                       "parent": parent,
+                       "parent": parent, "kind": kind,
                        "viewport": body.get("viewport") if isinstance(body.get("viewport"), list) else None}
                 return self._json(200, append_comment_log(p, rec))
             if path == "/__pairdeck/keep":
@@ -1676,8 +1685,9 @@ def cmd_review(args) -> int:
     if engine_dir is None:
         print("note: the deck's engine link does not resolve on disk; the page may load without its styles")
     print(f"review page for {p.slug}: {url}", flush=True)
-    print(f"Comment button (or the c key): drag a box on the {'poster' if POSTER else 'slide'}, type, Send. "
-          "Replies appear under each comment." + (" Zoom: + and -, 0 fits, 1 is print size." if POSTER else ""), flush=True)
+    print(f"Comment (or the c key): drag a box on the {'poster' if POSTER else 'slide'}, type what should change, Send. "
+          "Ask (or the q key): drag a box, type a question; the answer appears under it and the "
+          f"{UNIT} stays as it is." + (" Zoom: + and -, 0 fits, 1 is print size." if POSTER else ""), flush=True)
     if args.open:
         import webbrowser
         webbrowser.open(url)
@@ -1714,11 +1724,16 @@ def render_comment(p: Project, c: dict, threads: dict, review_url: str | None) -
         where = f"slide {c['slide']}" + (f" ({c['label']})" if c.get("label") else "") + \
             (f" \"{c['title']}\"" if c.get("title") else "")
     steps = f" · build step {c.get('step', 0)} of {c.get('steps', 0)}" if c.get("steps") else ""
-    out = [f"## {c['id']} · {where}{steps}"]
+    question = c.get("kind") == "question"
+    out = [f"## {c['id']} · {'question · ' if question else ''}{where}{steps}"]
     if c.get("parent") and c["parent"] in threads:
         par = threads[c["parent"]]
-        out.append(f"Follow-up to {par['id']}: \"{clip(par['text'], 200)}\"" +
-                   (f" → your reply: \"{clip(par['replies'][-1]['text'], 200)}\"" if par["replies"] else ""))
+        was_q = par.get("kind") == "question"
+        lead = ("Asks more about" if question and was_q else
+                "Put this answer in the " + UNIT + ": follow-up to the question" if was_q else "Follow-up to")
+        out.append(f"{lead} {par['id']}: \"{clip(par['text'], 200)}\"" +
+                   (f" → your {'answer' if was_q else 'reply'}: \"{clip(par['replies'][-1]['text'], 400 if was_q else 200)}\""
+                    if par["replies"] else ""))
     out.append(f"Box: {describe_box(c)}" + (f" · under it: \"{clip(c['under'], 240)}\"" if c.get("under") else ""))
     if c.get("author") and c["author"] != HANDLE:
         out.append(f"From: {c['author']}")
@@ -1729,6 +1744,14 @@ def render_comment(p: Project, c: dict, threads: dict, review_url: str | None) -
     return "\n".join(out)
 
 
+def save_batch(p: Project, out: list[str]) -> str:
+    text = "\n".join(out) + "\n"
+    batches = p.dir / "batches"
+    batches.mkdir(exist_ok=True)
+    (batches / (dt.datetime.now().strftime("%Y%m%d-%H%M%S") + ".md")).write_text(text, encoding="utf-8")
+    return text
+
+
 def emit_batch(p: Project, st: dict, fresh: list[dict], edits: list[dict], base_before: str | None) -> str:
     threads = comment_threads(p, set(st.get("sent", [])))
     by_id = {c["id"]: c for c in threads}
@@ -1737,8 +1760,12 @@ def emit_batch(p: Project, st: dict, fresh: list[dict], edits: list[dict], base_
     srv = p.server()
     review_url = srv["url"] if srv else None
     parts = []
-    if fresh:
-        parts.append(f"{len(fresh)} comment{'s' if len(fresh) != 1 else ''}")
+    asks = [c for c in fresh if c.get("kind") == "question"]
+    fixes = [c for c in fresh if c.get("kind") != "question"]
+    if asks:
+        parts.append(f"{len(asks)} question{'s' if len(asks) != 1 else ''}")
+    if fixes:
+        parts.append(f"{len(fixes)} comment{'s' if len(fixes) != 1 else ''}")
     if edits:
         parts.append(f"{len(edits)} edit{'s' if len(edits) != 1 else ''} by {HANDLE}")
     meta = snapshot_meta(p, base_before)
@@ -1750,7 +1777,13 @@ def emit_batch(p: Project, st: dict, fresh: list[dict], edits: list[dict], base_
     if POSTER:
         out.append(f"Visual look (palette, type): {DECK_STYLE_MD}" + ("" if DECK_STYLE_MD.exists() else " (none yet)"))
     out.append("")
-    for c in fresh:
+    if asks:
+        out += [f"# Questions ({len(asks)}): answer each on the page; leave the {UNIT} as it is", ""]
+        for c in asks:
+            out += [render_comment(p, by_id.get(c["id"], c), by_id, review_url), ""]
+    if fixes and asks:
+        out += [f"# Comments ({len(fixes)}): change the {UNIT}", ""]
+    for c in fixes:
         out += [render_comment(p, by_id.get(c["id"], c), by_id, review_url), ""]
     open_old = [c["id"] for c in threads if c["status"] == "with the agent" and c["id"] not in {x["id"] for x in fresh}]
     if open_old:
@@ -1767,22 +1800,29 @@ def emit_batch(p: Project, st: dict, fresh: list[dict], edits: list[dict], base_
         if len(rest) > 40:
             out.append(f"- … and {len(rest) - 40} more (`{CLI} learn {p.slug}`)")
         out.append("")
-    ids = " ".join(c["id"] for c in fresh) or "(none)"
+    ids = " ".join(c["id"] for c in fixes) or "(none)"
+    ask_ids = " ".join(c["id"] for c in asks)
+    answer_line = (f"Answer {'the questions first' if fixes or edits else 'each question'} ({ask_ids}): `{CLI} resolve {p.slug} <id> --reply-file answer.md` (or the "
+                   f"answer in quotes). It appears under the question on the page; plain text, short paragraphs, `- ` "
+                   f"bullets, **bold**, `code`, links. Answer from the {UNIT}'s sources and data: say what you checked, "
+                   f"and say so when you are not sure. Do not edit the {UNIT} for a question. If the answer shows the "
+                   f"{UNIT} leaves something out, end with one line saying so: the author can press \"Put it in the "
+                   f"{UNIT}\" to make it a change.")
+    if asks and not fixes and not edits:
+        out += ["## Next", "", f"1. {answer_line}", f"2. Start `{CLI} watch {p.slug}` again in the background, and "
+                "report in one or two lines."]
+        return save_batch(p, out)
     qa_line = (f"3. QA: `{CLI} qa {p.slug}`; fix every overflow and size error, and look at the full view and the close-ups."
                if POSTER else
                f"3. QA the slides you changed: `{CLI} qa {p.slug} --slides N,M`, and look at the screenshots.")
-    out += ["## Next", "",
+    out += ["## Next", ""] + ([f"0. {answer_line}"] if asks else []) + [
             f"1. Read the style guide if its sha changed, and the {UNIT} notes. Comments: {ids}.",
             f"2. Edit the {UNIT} in {p.deck_dir}. After each comment: `{CLI} resolve {p.slug} <id> \"reply\"`.",
             qa_line,
             f"4. `{CLI} snapshot {p.slug}` (the author's next edits are compared with it).",
             f"5. Learn: `{CLI} learn {p.slug}`, update STYLE.md, `{CLI} learn {p.slug} --ack <E-ids>`, commit the vault.",
             f"6. Start `{CLI} watch {p.slug}` again in the background, and report in two to four lines."]
-    text = "\n".join(out) + "\n"
-    batches = p.dir / "batches"
-    batches.mkdir(exist_ok=True)
-    (batches / (dt.datetime.now().strftime("%Y%m%d-%H%M%S") + ".md")).write_text(text, encoding="utf-8")
-    return text
+    return save_batch(p, out)
 
 
 def collect_edits(p: Project, st: dict) -> tuple[list[dict], str | None]:
@@ -2161,9 +2201,14 @@ def cmd_status(args) -> int:
     print("  watcher: " + (f"running, pid {w['pid']} since {w['started']}" if w else "not running"))
     print("  review page: " + (f"{s['url']} (pid {s['pid']})" if s else f"not running (`{CLI} review {p.slug}`)"))
     counts: dict = {}
+    asked: dict = {}
     for c in comment_threads(p, set(st.get("sent", []))):
-        counts[c["status"]] = counts.get(c["status"], 0) + 1
+        bucket = asked if c["kind"] == "question" else counts
+        status = "done" if c["kind"] == "question" and c["status"] == "kept" else c["status"]
+        bucket[status] = bucket.get(status, 0) + 1
     print("  comments: " + (", ".join(f"{v} {k}" for k, v in sorted(counts.items())) or "none yet"))
+    if asked:
+        print("  questions: " + ", ".join(f"{v} {k}" for k, v in sorted(asked.items())))
     print(f"  style evidence waiting: {len(pending_events(p.slug))}")
     print(f"  style guide: {style_summary()}")
     return 0

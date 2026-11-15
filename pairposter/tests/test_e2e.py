@@ -73,12 +73,12 @@ def main() -> int:
 
     print("cli")
     out = pp("--version")
-    ok(out.strip() == "pairposter 0.1.0", "pairposter --version names the poster flavour")
+    ok(out.strip() == "pairposter 0.2.0", "pairposter --version names the poster flavour")
     out = pp("--help")
     ok(" print " in out or "print," in out, "the help lists print")
     cmds = set(re.search(r"\{([a-z,]+)\}", out).group(1).split(","))
     ok("print" in cmds and not cmds & {"bundle", "card"}, "the deck-only commands are not offered")
-    ok(run(PD, "--version").strip().startswith("pairdeck 0.1"), "pairdeck itself still runs as PairDeck")
+    ok(run(PD, "--version").strip().startswith("pairdeck 0."), "pairdeck itself still runs as PairDeck")
 
     print("setup")
     out = pp("setup", "--name", "Ada Lovelace")

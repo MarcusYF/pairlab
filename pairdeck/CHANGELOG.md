@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.0 (2026-11-15)
+
+- **Ask about any part.** The review page has **Ask** (or `q`) beside **Comment** (or `c`). Box a part of a slide and type a
+  question; the agent answers under it, on the page, and leaves the deck as it is. A comment records its `kind` (`change`, the
+  default, or `question`). Under an answer: **Ask more** (a follow-up question), **Put it in the slide** (a change that
+  carries the question and its answer to the agent) and **Done**. Question boxes and the Ask button are purple, the agent's
+  colour; the compose box switches between "Change it" and "Ask about it".
+- **Answers read well.** Replies render light Markdown (paragraphs, `-` and `1.` lists, bold, italic, code, https links),
+  escaped first. A notice in the corner says when an answer or reply arrives (also across the reload a fix causes), and
+  **⇔** widens the panel to up to 640 pixels for long answers.
+- **The loop.** A batch lists questions first, under "Questions", with what a good answer needs; a batch of questions alone
+  asks for answers only (no QA, snapshot or learning). Questions are never style evidence, and Done on a question is not
+  `kept`. `pairdeck status` counts questions apart from comments. 8 new end-to-end checks (66 in all).
+
 ## 0.1.1 (2026-11-14)
 
 - **Runs PairPoster too.** `../pairposter/bin/pairposter` runs this program in its poster flavour (`PAIRLAB_FLAVOR=poster`):

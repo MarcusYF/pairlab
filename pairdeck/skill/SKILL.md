@@ -1,6 +1,6 @@
 ---
 name: pairdeck
-description: PairDeck builds animated, step-by-step HTML explainer decks (a visual intro to a paper, project, concept or proposal, a research or results report deck, a pitch) with colour-coded diagrams and charts that build up, one real interaction, light and dark mode and a phone layout; checks every slide on screenshots; and revises the deck in a live comment loop in which the author drags a box on a slide in a local review page and types. It keeps the author's visual style (palette, type, layout, density) in a style guide that learns from their comments and edits, and can start it from their past decks (.pptx, .pdf, .html). Use when the author asks for a visual explainer, an animated or interactive HTML deck, web slides that explain something, a report deck, to review, comment on or watch such a deck (pairdeck, "watch my deck"), or to seed or update their visual style guide. Not for Keynote or PowerPoint files, posters, a single static chart, or talks with a speaker script (PairTalk does those).
+description: PairDeck builds animated, step-by-step HTML explainer decks (a visual intro to a paper, project, concept or proposal, a research or results report deck, a pitch) with colour-coded diagrams and charts that build up, one real interaction, light and dark mode and a phone layout; checks every slide on screenshots; and runs a live loop on a local review page where the author drags a box on a slide and asks for a change (the deck is fixed) or asks a question (answered on the page). It keeps the author's visual style in a style guide that learns from their comments and edits, and can seed it from past decks (.pptx, .pdf, .html). Use when the author asks for a visual explainer, an animated or interactive HTML deck, web slides that explain something, a report deck, to review, comment on, ask about or watch such a deck (pairdeck, "watch my deck"), or to seed or update their visual style guide. Not for Keynote or PowerPoint files, posters, a single static chart, or talks with a speaker script (PairTalk does those).
 ---
 
 # PairDeck
@@ -59,15 +59,15 @@ No profile yet: ask the author's name and run `$PD setup --name "…" --agent <y
    the checklist in `references/qa.md`. Fix, repeat until a full pass is clean, then check the facts once more.
 6. **Snapshot:** `$PD snapshot <slug> -m "first build"`. The author's later edits are compared with this version.
 7. **Show it.** Start `$PD review <slug>` in the background (it serves the deck on 127.0.0.1 with the comment overlay; the
-   deck file itself is never changed) and give the author its URL. Say in two lines how to comment: press **Comment** (or
-   `c`), drag a box over what they mean (a click means the whole slide), type, Send; replies appear under each comment. Offer
-   to start the loop.
+   deck file itself is never changed) and give the author its URL. Say in two lines how to use it: drag a box over what
+   they mean (a click means the whole slide) after pressing **Comment** (or `c`) to ask for a change, or **Ask** (or `q`) to
+   ask a question about it; replies and answers appear under each one. Offer to start the loop.
 
 ## The comment loop
 
 Start it when the author asks ("watch my deck", or yes to your offer):
 
-1. `$PD status <slug>`. If comments are "with the agent" from an earlier session, handle them first (step 2 of each batch).
+1. `$PD status <slug>`. If comments are "with the agent" from an earlier session, handle them first (steps 2 and 3 of each batch).
 2. Make sure the review page runs (`$PD review <slug>` in the background; it keeps running between batches).
 3. Start the watcher **in the background, so that its exit wakes you**: `$PD watch <slug>` (Claude Code: the Bash tool with
    `run_in_background: true`). It holds a lock: one watcher per deck; `--takeover` only when the author moves the loop to this
@@ -84,18 +84,24 @@ The watcher prints one batch and exits 0. Exit 4: the deck changed after you ans
 `$PD snapshot <slug>`, then watch again). Exit 5: another session watches this deck. Exit 2: the deck file is missing.
 
 1. **Read the batch.** For each comment: its id, slide, build step, the box (fractions of the slide's content area), the words
-   under the box, the text, and any earlier thread. For each of the author's own edits: a diff against your last snapshot.
-   Re-read `STYLE.md` if its sha changed.
-2. **For each comment, in order:** edit the deck, then `$PD resolve <slug> <id> "<reply>"`. The reply appears under the comment
+   under the box, the text, and any earlier thread. Questions come first, under "Questions". For each of the author's own
+   edits: a diff against your last snapshot. Re-read `STYLE.md` if its sha changed.
+2. **Answer the questions** (Ask on the review page), before any edit: `$PD resolve <slug> <id> --reply-file answer.md`.
+   Answer from the deck's sources and data, say what you checked, and say so when you are not sure. Write in the question's
+   language, about 150 words unless it needs more, in plain text with short paragraphs and `- ` bullets (`**bold**`, `` `code` ``
+   and links render too). **Do not edit the deck for a question.** If the answer shows the deck leaves something out, end
+   with one line saying so; the author can press **Put it in the slide**, which sends a change that carries the question and
+   your answer. A batch of questions alone needs no QA, snapshot or learning: answer, then watch again.
+3. **For each comment, in order:** edit the deck, then `$PD resolve <slug> <id> "<reply>"`. The reply appears under the comment
    on the review page. If a comment states a general preference the watcher did not mark as `stated` (it marks "always",
    "never", "from now on" and the like), add `--stated`.
-3. **Check what you changed:** `$PD qa <slug> --slides N,M` and look at the screenshots. The review page reloads by itself when
+4. **Check what you changed:** `$PD qa <slug> --slides N,M` and look at the screenshots. The review page reloads by itself when
    the deck changes on disk.
-4. **Snapshot:** `$PD snapshot <slug> -m "c3, c4"`. Do this before you watch again.
-5. **Learn** (`references/learning.md`): `$PD learn <slug>` shows every pending event in full. Update `STYLE.md`, then
+5. **Snapshot:** `$PD snapshot <slug> -m "c3, c4"`. Do this before you watch again.
+6. **Learn** (`references/learning.md`): `$PD learn <slug>` shows every pending event in full. Update `STYLE.md`, then
    `$PD learn --ack <ids>`; an event that is not the author's (a test, another person's edit) gets
    `$PD learn --discard <ids> --why "…"`. Commit the vault: `git -C <data home> add -A && git -C <data home> commit -m "style: …"`.
-6. **Watch again** the way you started, and **report** in two to four lines, in the language `preferences.md` asks for (else
+7. **Watch again** the way you started, and **report** in two to four lines, in the language `preferences.md` asks for (else
    the author's): what changed, any rule learned or promoted (so the author can object), anything that needs them.
 
 ### Editing rules
@@ -112,7 +118,8 @@ The watcher prints one batch and exits 0. Exit 4: the deck changed after you ans
 
 **Replies** are one to three short sentences: what changed and where (slide numbers), and one alternative only if it is worth
 the author's time. The author presses **Keep** on an answer they accept as made (that is `kept` evidence; the comment's box then
-leaves the slide), or **Follow up**.
+leaves the slide), or **Follow up**. On an answered question they press **Ask more**, **Put it in the slide**, or **Done**;
+questions are never style evidence, since asking about a slide says nothing about how the author wants it made.
 
 ## Accuracy
 

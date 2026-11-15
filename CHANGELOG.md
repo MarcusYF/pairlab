@@ -3,6 +3,13 @@
 PairLab's releases. Each tool keeps its own detailed changelog: [PairDeck](pairdeck/CHANGELOG.md),
 [PairTeX](pairtex/CHANGELOG.md), [PairTalk](pairtalk/CHANGELOG.md).
 
+## 0.3.0 (2026-11-15)
+
+- **Ask about any part (PairDeck 0.2.0, PairPoster 0.2.0).** The review page has **Ask** (or `q`) beside **Comment**: box a
+  part of a slide or a poster and type a question; the agent answers under it, on the page, and leaves the work as it is.
+  Answers render light Markdown; a notice says when one arrives; **Put it in the slide** turns an answer into a change.
+  Questions come first in each batch and are never style evidence.
+
 ## 0.2.0 (2026-11-14)
 
 - **PairPoster 0.1.0** (new): conference posters as one HTML page at the venue's size, built picture-first (icon chains,

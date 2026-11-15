@@ -34,6 +34,8 @@ present, so each round needs fewer comments than the last.
   note on a talk's slide. No copying text into a chat window and back.
 - **Your agent answers in place.** A watcher wakes your agent when you comment; it fixes the work, checks it (screenshots,
   print size, a LaTeX build), replies next to your comment, and waits for the next one. A round takes about a minute.
+- **Ask, not only change.** On a deck or a poster, box any part and ask about it: where a number comes from, why this
+  baseline. The answer appears under your question, and nothing changes until you ask for it.
 - **You stay in charge.** Press **Keep**, **Follow up**, or edit the thing yourself: your own edits are read as yours and
   kept. Coauthors can comment too; their comments are answered, not learned from.
 - **On the agent you already use.** Claude Code or Codex does the thinking, on your own plan. There is no PairLab server,
@@ -69,9 +71,10 @@ After a brainstorm you report what you found; then you write the paper, give the
 You give your agent the material (a paper, a project, the results of an investigation) and it builds a short web deck that
 explains one idea with pictures that build up step by step, checked slide by slide on screenshots. Then you drag a box over
 any slide in the local review page and type what should change: the agent fixes the deck in the background and replies under
-your comment. Your decks look like yours from the first one, because the style guide is seeded from decks you already made.
+your comment. Or press **Ask**, box a chart, and ask why it looks the way it does: the answer comes back on the page. Your
+decks look like yours from the first one, because the style guide is seeded from decks you already made.
 
-<p align="center"><img src="pairdeck/docs/img/review-thread.png" width="100%" alt="The PairDeck review page on the example Simpson's paradox deck: two comments marked with boxes on the slide, and in the side panel the agent's reply 'Both charts now share one scale', with Keep and Follow up buttons."></p>
+<p align="center"><img src="pairdeck/docs/img/review-ask.png" width="100%" alt="A question on the PairDeck review page: a purple box over the two bars of the example's 'Put the groups together, and B wins' slide, and in the side panel the question 'Why does B win here when A wins in both groups?' with the agent's answer in green, three bullets on how the treatments got different patients, and Ask more, Put it in the slide and Done buttons."></p>
 
 **[Read the PairDeck page →](pairdeck/README.md)**
 
@@ -177,9 +180,9 @@ and revert. Your agent reads the files it works on and sends them to its model p
 
 ## Status
 
-PairTeX 0.5 is in daily use on papers in progress, written on Overleaf with coauthors. PairDeck and PairTalk 0.1 are first
-public releases of tools built for the author's own research reports and conference talks; PairPoster 0.1 was built while
-polishing a conference poster with them. Issues and pull requests are
+PairTeX 0.5 is in daily use on papers in progress, written on Overleaf with coauthors. PairDeck 0.2 is how the author's own
+research reports arrive, questions answered on the page; PairTalk 0.1 is the first public release of the tool built for the
+author's conference talks; PairPoster 0.2 was built while polishing a conference poster with them. Issues and pull requests are
 welcome.
 
 ## Acknowledgments

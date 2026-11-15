@@ -30,7 +30,8 @@ instead of sentences, type that stays readable at print size, and a check that s
   agent to look at.
 - **Comment on the poster.** `pairposter review` serves it on 127.0.0.1 with a comment layer: zoom, drag a box, type. The
   comment records the block it points at and the words under the box; the reply shows under it, and the page reloads, at
-  the same zoom, when the poster changes.
+  the same zoom, when the poster changes. **Ask** (or `q`) instead puts a question about the boxed part; the answer appears
+  under it and the poster stays as it is.
 - **The loop.** `pairposter watch` wakes your agent with each batch of comments and your own edits; it fixes, answers,
   snapshots and learns, then watches again.
 - **Charts from the paper's own data.** `tools/figdata.py` reads the lines and error bands back out of a matplotlib figure

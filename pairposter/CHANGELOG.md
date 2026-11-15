@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0 (2026-11-15)
+
+- **Ask about any part.** The review page (PairDeck's, shared) has **Ask** (or `q`) beside **Comment**: box a part of the
+  poster and type a question; the agent answers under it from the poster's sources and leaves the poster as it is. Questions
+  come first in each batch and are never style evidence. See PairDeck 0.2.0 for the details.
+
 ## 0.1.0 (2026-11-14)
 
 The first version, as PairLab's fourth tool.
