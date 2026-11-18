@@ -2,12 +2,13 @@
 # Install PairTeX (macOS or Linux). Safe to rerun; an agent can run it unattended.
 #   - links the skill for Claude Code:  ~/.claude/skills/pairtex
 #   - links the skill for Codex and other agents that read the open agent-skills format:  ~/.agents/skills/pairtex
+#   - links the skill for Google Antigravity (App, CLI, IDE):  ~/.gemini/config/skills/pairtex
 #   - links the CLI as ~/.local/bin/pairtex (and ~/.local/bin/ow, its old name)
 # Then create your profile: pairtex setup --name "Your Name"   (your name as Overleaf shows it to coauthors)
 set -e
 APP="$(cd "$(dirname "$0")" && pwd)"
 chmod +x "$APP/bin/pairtex"
-for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+for dir in "$HOME/.claude/skills" "$HOME/.agents/skills" "$HOME/.gemini/config/skills"; do
   mkdir -p "$dir"
   ln -sfn "$APP/skill" "$dir/pairtex"
   echo "linked $dir/pairtex -> $APP/skill"

@@ -56,7 +56,7 @@ POSTER = os.environ.get("PAIRLAB_FLAVOR") == "poster"
 CLI = "pairposter" if POSTER else "pairdeck"
 TOOL = "PairPoster" if POSTER else "PairDeck"
 UNIT = "poster" if POSTER else "deck"
-VERSION = "0.2.0"  # PairDeck and PairPoster share this program and release together
+VERSION = "0.2.1"  # PairDeck and PairPoster share this program and release together
 POSTER_APP = APP.parent / "pairposter"
 SKILL = (POSTER_APP if POSTER else APP) / "skill"
 ENGINE = SKILL / "assets" / "engine"

@@ -10,8 +10,9 @@ so a researcher who knows one knows them all. This page is that contract. Each t
 | Piece | Contract |
 | --- | --- |
 | **Data home** | `~/.<tool>` (`~/.pairtex`, `~/.pairdeck`, `~/.pairtalk`, `~/.pairposter`), or `$<TOOL>_HOME`. Never inside the code folder. A git repository unless set up with `--no-git`, so every change to the vault is a commit the author can read and revert. |
-| **No model of its own** | The CLI is deterministic plumbing (standard library, plus git, Chrome or Node where the tool needs them). All judgement runs in the coding agent the author already uses (Claude Code, Codex, or any agent that runs shell commands), on the author's own plan. No API key, no server of ours. |
-| **Skill** | `<tool>/skill/SKILL.md` plus `references/`, linked by `install.sh` into `~/.claude/skills/<tool>` (Claude Code) and `~/.agents/skills/<tool>` (Codex and other agents that read the open agent-skills format). |
+| **No model of its own** | The CLI is deterministic plumbing (standard library, plus git, Chrome or Node where the tool needs them). All judgement runs in the coding agent the author already uses (Claude Code, Codex, Antigravity, or any agent that runs shell commands), on the author's own plan. No API key, no server of ours. |
+| **Skill** | `<tool>/skill/SKILL.md` plus `references/`, linked by `install.sh` into `~/.claude/skills/<tool>` (Claude Code), `~/.agents/skills/<tool>` (Codex and other agents that read the open agent-skills format) and
+`~/.gemini/config/skills/<tool>` (Google Antigravity). |
 | **Commands** | `setup`, `paths`, `status`, `seed`, `learn`, and a feedback loop: `watch` (waits for the author's feedback, prints one batch, exits) and `resolve` (answers one item). Same names and flags in every tool. |
 
 ## 2. The vault

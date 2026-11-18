@@ -1,8 +1,8 @@
 # PairTeX for any coding agent
 
-This file is for coding agents: Claude Code, Codex, and any other agent that can run shell commands and edit files. It has
-three parts: which agent and subscription to use, how to **install PairTeX for the user** without them typing anything but
-their answers, and how to run the loop.
+This file is for coding agents: Claude Code, Codex, Google Antigravity, and any other agent that can run shell commands and edit
+files. It has three parts: which agent and subscription to use, how to **install PairTeX for the user** without them typing
+anything but their answers, and how to run the loop.
 
 ## Which agent, which subscription
 
@@ -13,15 +13,20 @@ into a queue of comments. The thinking is done by the agent the user already run
 | --- | --- | --- |
 | Claude Code | a Claude subscription or an Anthropic API key | `~/.claude/skills/pairtex` |
 | Codex (CLI, IDE extension, ChatGPT desktop app) | a ChatGPT plan or an OpenAI API key | `~/.agents/skills/pairtex` |
+| Google Antigravity (App, CLI `agy`, IDE) | a Google AI plan or a Gemini API key | `~/.gemini/config/skills/pairtex` |
 | Another agent that runs shell commands | its own | this file and `skill/SKILL.md` |
 
-`install.sh` links the skill into both folders, so one install serves Claude Code and Codex. The user can switch agents at any
-time: the loop's state (profile, style guide, papers) lives in the data home, `~/.pairtex`, not in the agent. Only one session
-watches a given paper at a time; `pairtex watch <slug> --takeover` moves it.
+`install.sh` links the skill into all three folders, so one install serves Claude Code, Codex and Antigravity. In Antigravity, the
+user first lets `pairtex` run outside its terminal sandbox (no network, workspace only) by adding `command(pairtex)` and
+`write_file(<their home>/.pairtex)` to Antigravity's Allow list; never change those permissions yourself ([why and
+where](https://github.com/MarcusYF/pairlab/blob/main/AGENTS.md#in-google-antigravity)). The user can switch agents at any time:
+the loop's state (profile, style guide, papers) lives in the data home, `~/.pairtex`, not in the agent. Only one session watches a
+given paper at a time; `pairtex watch <slug> --takeover` moves it.
 
-The profile's `agent` name is what notes print before the reply ("Claude:", "Codex:"). Set it with `pairtex setup --agent Codex`.
-A paper's note macro keeps the name it was created with; a user who switches agents often can choose a neutral name, such as
-`--agent AI`. The `Co-Authored-By: Claude` commit trailer is added only for Claude; set `"trailer"` in `profile.json` for another.
+The profile's `agent` name is what notes print before the reply ("Claude:", "Codex:", "Gemini:"). Set it with `pairtex setup
+--agent Codex`. A paper's note macro keeps the name it was created with; a user who switches agents often can choose a neutral
+name, such as `--agent AI`. The `Co-Authored-By: Claude` commit trailer is added only for Claude; set `"trailer"` in
+`profile.json` for another.
 
 ## Install PairTeX for the user
 
@@ -35,15 +40,16 @@ question short.
    and install it yourself only if they say yes.
 2. **Get the code.** If you are not already in a clone, run `git clone https://github.com/MarcusYF/pairlab ~/pairlab` (PairTeX is
    in its `pairtex/` folder). Use another folder only if the user names one. To update later, run `git -C ~/pairlab pull`.
-3. **Install.** Run `~/pairlab/install.sh pairtex` (or `~/pairlab/pairtex/install.sh`). It links the skill for Claude Code and for Codex, and links the CLI at
-   `~/.local/bin/pairtex`. If it says `~/.local/bin` is not on the PATH, call `~/.local/bin/pairtex` by its full path, and give
-   the user the line for their shell profile. Do not edit the shell profile unless they ask.
+3. **Install.** Run `~/pairlab/install.sh pairtex` (or `~/pairlab/pairtex/install.sh`). It links the skill for Claude Code, Codex
+   and Antigravity, and links the CLI at `~/.local/bin/pairtex`. If it says `~/.local/bin` is not on the PATH, call
+   `~/.local/bin/pairtex` by its full path, and give the user the line for their shell profile. Do not edit the shell profile
+   unless they ask.
 4. **Ask two things, in one message:**
    - their name exactly as Overleaf shows it to coauthors (for a git remote, the name on their commits). On a shared paper the
      loop answers only comments written under this name;
    - where the paper lives (an Overleaf project link, a git URL or a local folder), and the main `.tex` file if they know it.
 
-   Then run `pairtex setup --name "<their name>" --agent <your name: Claude, Codex, …>`.
+   Then run `pairtex setup --name "<their name>" --agent <your name: Claude, Codex, Gemini, …>`.
 5. **Credentials: the user's job, never yours.**
    - **Overleaf.** The git integration needs a git authentication token. The user creates it in Overleaf (Account settings, Git
      integration), then stores it once by running this in their own terminal:
@@ -76,10 +82,13 @@ configuration or shell files without asking. The first push happens only once th
 
 ## Run the loop
 
-Read `skill/SKILL.md` and follow it; it is the full procedure. Codex and Claude Code load it as the `pairtex` skill. Where it
-says to start the watcher "in the background", use what your harness offers:
+Read `skill/SKILL.md` and follow it; it is the full procedure. Claude Code, Codex and Antigravity load it as the `pairtex` skill.
+Where it says to start the watcher "in the background", use what your harness offers:
 
 - **You can run a command in the background and be woken when it exits** (Claude Code): run `pairtex watch <slug>` that way.
+- **Antigravity:** run it as a background command, then set a timer (the one behind `/schedule`, up to 30 minutes) whose condition
+  is that background task: the watcher's exit wakes you. If the timer fires first, set another. In goal mode (`/goal watch
+  <slug>`) you keep going between batches.
 - **You can wait on a long foreground command:** run `pairtex watch <slug> --max-hours 0.5` in the foreground. Exit 0 prints
   a batch. Exit 1 means nothing arrived in that time: run it again.
 - **Your commands time out after a short while:** poll instead. `pairtex watch <slug> --once` returns at once, with a batch

@@ -2,8 +2,9 @@
 # Install PairLab's tools (macOS or Linux). Safe to rerun; an agent can run it unattended.
 #   ./install.sh                     all four: PairDeck, PairTeX, PairTalk, PairPoster
 #   ./install.sh pairtex             one or more by name: pairdeck pairtex pairtalk pairposter
-# Each tool's own install.sh links its skill for Claude Code (~/.claude/skills/<tool>) and for Codex and other agents
-# that read the open agent-skills format (~/.agents/skills/<tool>), links its command in ~/.local/bin, and checks what
+# Each tool's own install.sh links its skill for Claude Code (~/.claude/skills/<tool>), for Codex and other agents that
+# read the open agent-skills format (~/.agents/skills/<tool>) and for Google Antigravity (~/.gemini/config/skills/<tool>),
+# links its command in ~/.local/bin, and checks what
 # it needs. Nothing is downloaded and nothing outside those folders changes.
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"

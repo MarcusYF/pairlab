@@ -2,13 +2,14 @@
 # Install PairDeck (macOS or Linux). Safe to rerun; an agent can run it unattended. The suite's ./install.sh pairdeck runs it.
 #   - links the skill for Claude Code:  ~/.claude/skills/pairdeck
 #   - links the skill for Codex and other agents that read the open agent-skills format:  ~/.agents/skills/pairdeck
+#   - links the skill for Google Antigravity (App, CLI, IDE):  ~/.gemini/config/skills/pairdeck
 #   - links the CLI as ~/.local/bin/pairdeck
 #   - checks Python and Chrome; nothing is downloaded
 # Then create your profile: pairdeck setup --name "Your Name"
 set -e
 APP="$(cd "$(dirname "$0")" && pwd)"
 chmod +x "$APP/bin/pairdeck"
-for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+for dir in "$HOME/.claude/skills" "$HOME/.agents/skills" "$HOME/.gemini/config/skills"; do
   mkdir -p "$dir"
   ln -sfn "$APP/skill" "$dir/pairdeck"
   echo "linked $dir/pairdeck -> $APP/skill"

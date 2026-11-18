@@ -17,7 +17,7 @@ pairdeck paths       # where the profile, style vault and decks are
 
 Below, `$PD` is the CLI: `pairdeck`, or `~/.local/bin/pairdeck` when it is not on PATH, or `bin/pairdeck` next to this skill's
 folder. `$PD <command> -h` lists the options. This skill works in any agent that reads `SKILL.md` files (Claude Code, Codex,
-...); where a step depends on the agent, it says so.
+Antigravity, ...); where a step depends on the agent, it says so.
 
 | Path (`$PD paths`) | What it is |
 | --- | --- |
@@ -28,7 +28,7 @@ folder. `$PD <command> -h` lists the options. This skill works in any agent that
 | `projects/<slug>/` | Per deck: `project.json` (where the deck lives), `NOTES.md`, `comments.jsonl`, snapshots |
 | `references/` | `style.md`, `components.md`, `content.md`, `qa.md`, `targets.md`, `learning.md`, `seeding.md` |
 
-No profile yet: ask the author's name and run `$PD setup --name "…" --agent <your name: Claude, Codex, …>`.
+No profile yet: ask the author's name and run `$PD setup --name "…" --agent <your name: Claude, Codex, Gemini, …>`.
 
 ## Before every deck
 
@@ -53,10 +53,10 @@ No profile yet: ask the author's name and run `$PD setup --name "…" --agent <y
    baseline.
 4. **Write the slides** with the engine's components (`references/components.md`) in the visual language of
    `references/style.md`, as the author's `STYLE.md` adjusts it. Put this deck's colour mapping for its actors in `NOTES.md`.
-5. **Check every slide:** `$PD qa <slug>` lints, checks the layout in a browser, and screenshots every slide fully built in
-   light, dark and narrow mode (`--slides 3,5` to re-check, `--steps` for build order, `--after '<JS click>' --tag x` for an
-   interaction state). **Open and look at every screenshot** (Claude Code: the Read tool; Codex: `view_image`) and go through
-   the checklist in `references/qa.md`. Fix, repeat until a full pass is clean, then check the facts once more.
+5. **Check every slide:** `$PD qa <slug>` lints, checks the layout in a browser, and screenshots every slide fully built in light,
+   dark and narrow mode (`--slides 3,5` to re-check, `--steps` for build order, `--after '<JS click>' --tag x` for an interaction
+   state). **Open and look at every screenshot** (Claude Code: the Read tool; Codex: `view_image`; Antigravity: open the PNG) and
+   go through the checklist in `references/qa.md`. Fix, repeat until a full pass is clean, then check the facts once more.
 6. **Snapshot:** `$PD snapshot <slug> -m "first build"`. The author's later edits are compared with this version.
 7. **Show it.** Start `$PD review <slug>` in the background (it serves the deck on 127.0.0.1 with the comment overlay; the
    deck file itself is never changed) and give the author its URL. Say in two lines how to use it: drag a box over what
@@ -70,9 +70,10 @@ Start it when the author asks ("watch my deck", or yes to your offer):
 1. `$PD status <slug>`. If comments are "with the agent" from an earlier session, handle them first (steps 2 and 3 of each batch).
 2. Make sure the review page runs (`$PD review <slug>` in the background; it keeps running between batches).
 3. Start the watcher **in the background, so that its exit wakes you**: `$PD watch <slug>` (Claude Code: the Bash tool with
-   `run_in_background: true`). It holds a lock: one watcher per deck; `--takeover` only when the author moves the loop to this
-   session. An agent that cannot be woken by a background command runs `$PD watch <slug> --max-hours 0.5` in the foreground,
-   or polls `$PD watch <slug> --once` every 30 to 60 seconds.
+   `run_in_background: true`; Antigravity: a background command and a timer whose condition is that task). It holds a lock: one
+   watcher per deck; `--takeover` only when the author moves the loop to this session. An agent that cannot be woken by a
+   background command runs `$PD watch <slug> --max-hours 0.5` in the foreground, or polls `$PD watch <slug> --once` every 30 to 60
+   seconds.
 4. Tell the author in one line that you are watching, and where the review page is.
 
 **Authorization.** Starting the loop at the author's request authorizes edits to this deck that answer the comments it
@@ -142,6 +143,11 @@ worst case"). Your own inferences may appear, labelled as yours. Details: `refer
   hidden pane throttles timers, so judge timed animations with `qa --after` instead.
 - **Codex.** Look at screenshots with `view_image`. If background commands cannot wake you, poll `$PD watch <slug> --once`.
   Invocation: `$pairdeck`.
+- **Antigravity.** Its terminal sandbox has no network and sees only the workspace, so the author allows `pairdeck` outside it
+  first (`command(pairdeck)` and `write_file` for the data home, in Antigravity's Allow list; the suite's `AGENTS.md`). Never
+  change those permissions yourself. Run `review` and `watch` as background commands (they show under `/tasks`); after
+  starting the watcher, set a timer (the one behind `/schedule`, up to 30 minutes) whose condition is the watcher's task, so
+  its exit wakes you. Under `/goal watch <slug>` you keep going between batches. Invocation: `/pairdeck`.
 
 ## Stop
 

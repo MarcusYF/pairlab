@@ -11,9 +11,9 @@
 
 <p align="center">
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-MIT-27709C" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/version-0.1.0-C6952C" alt="version 0.1.0">
+  <img src="https://img.shields.io/badge/version-0.1.1-C6952C" alt="version 0.1.1">
   <img src="https://img.shields.io/badge/python-3.9%2B%20%C2%B7%20node%2022%2B-6D5398" alt="Python 3.9+ and Node 22+">
-  <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex-227828" alt="works with Claude Code and Codex">
+  <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Antigravity-227828" alt="works with Claude Code, Codex and Antigravity">
 </p>
 
 You comment on any slide and click of your talk, drawing a box around the part you mean, or you rewrite a line of the speaker
@@ -68,8 +68,8 @@ A chat window forgets what you corrected. PairTalk keeps what it learns about yo
 </p>
 
 A pattern starts as tentative and is confirmed after three independent pieces of evidence, or at once when you say "always" or
-"never". Your edits to `STYLE.md` win, and style never changes a claim or a number. One guide serves all your talks, with
-Claude Code or Codex. When you also use PairDeck, the agent takes your visual look (palette, type, layout) from PairDeck's
+"never". Your edits to `STYLE.md` win, and style never changes a claim or a number. One guide serves all your talks, with Claude
+Code, Codex or Antigravity. When you also use PairDeck, the agent takes your visual look (palette, type, layout) from PairDeck's
 guide and keeps this one for how you build and give talks.
 
 ## Start from your past talks
@@ -86,11 +86,12 @@ ones to keep or delete. Everything stays in `~/.pairtalk` on your computer.
 
 ## Use it with the agent you already have
 
-PairTalk has no model and needs no API key of its own. It runs inside the coding agent you already use, on your own plan:
-**Claude Code** or **Codex**, or any other agent that runs shell commands. One install serves both; your talks and your style
-guide live in `~/.pairtalk`, not in the agent.
+PairTalk has no model and needs no API key of its own. It runs inside the coding agent you already use, on your own plan: **Claude
+Code**, **Codex** or **Google Antigravity**, or any other agent that runs shell commands. One install serves all three (in
+Antigravity, allow `pairtalk` outside its terminal sandbox first: [AGENTS.md](../AGENTS.md#in-google-antigravity)); your talks and
+your style guide live in `~/.pairtalk`, not in the agent.
 
-**Let your agent install it.** Paste this into Claude Code or Codex:
+**Let your agent install it.** Paste this into Claude Code, Codex or Antigravity:
 
 ```text
 Install PairTalk from https://github.com/MarcusYF/pairlab and follow pairtalk/AGENTS.md
@@ -105,7 +106,7 @@ pairtalk setup --name "Ada Lovelace"                                            
 pairtalk new mytalk --title "How PageRank ranks the web" --minutes 15                # 2. a talk folder
 ```
 
-3. In Claude Code or Codex, say **"build mytalk from my paper"**, then **"watch mytalk"**. To try the loop first,
+3. In Claude Code, Codex or Antigravity, say **"build mytalk from my paper"**, then **"watch mytalk"**. To try the loop first,
    `pairtalk new demo --example pagerank` makes the eight-minute demo talk shown on this page.
 
 The rest of this page is the reference.
@@ -116,7 +117,7 @@ Needs Python 3.9+, git, Node 22+ and, for screenshots, an installed Chrome or Ch
 
 ```sh
 git clone https://github.com/MarcusYF/pairlab && cd pairlab
-./install.sh pairtalk          # links the skill for Claude Code and Codex, and ~/.local/bin/pairtalk
+./install.sh pairtalk          # links the skill for Claude Code, Codex and Antigravity, and ~/.local/bin/pairtalk
 (cd pairtalk && npm install)   # once: acorn (reads the notes) and Playwright (screenshots with your Chrome; no browser download)
 pairtalk setup --name "Ada Lovelace" --agent Claude
 ```
@@ -163,7 +164,7 @@ and script edits go to `~/.pairtalk/projects/mytalk/inbox/`. It answers only thi
 
 ## The loop
 
-In Claude Code or Codex: "watch mytalk". That session reads your style guide and the talk's notes and runs
+In Claude Code, Codex or Antigravity: "watch mytalk". That session reads your style guide and the talk's notes and runs
 `pairtalk watch mytalk` in the background. The watcher waits until feedback has settled, prints one batch and exits, which
 wakes the agent:
 

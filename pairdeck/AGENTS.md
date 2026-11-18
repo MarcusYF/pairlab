@@ -1,8 +1,8 @@
 # PairDeck for any coding agent
 
-This file is for coding agents: Claude Code, Codex, and any other agent that can run shell commands and edit files. It has
-three parts: which agent and subscription to use, how to **install PairDeck for the user** without them typing anything but
-their answers, and how to run the comment loop.
+This file is for coding agents: Claude Code, Codex, Google Antigravity, and any other agent that can run shell commands and edit
+files. It has three parts: which agent and subscription to use, how to **install PairDeck for the user** without them typing
+anything but their answers, and how to run the comment loop.
 
 ## Which agent, which subscription
 
@@ -14,12 +14,17 @@ already runs, on the user's own plan:
 | --- | --- | --- |
 | Claude Code | a Claude subscription or an Anthropic API key | `~/.claude/skills/pairdeck` |
 | Codex (CLI, IDE extension, desktop app) | a ChatGPT plan or an OpenAI API key | `~/.agents/skills/pairdeck` |
+| Google Antigravity (App, CLI `agy`, IDE) | a Google AI plan or a Gemini API key | `~/.gemini/config/skills/pairdeck` |
 | Another agent that runs shell commands | its own | this file and `skill/SKILL.md` |
 
-The installer links the skill into both folders, so one install serves Claude Code and Codex. The user can switch agents at
-any time: the profile, the style guide and the decks' state live in the data home, `~/.pairdeck`, not in the agent. Only one
-session watches a given deck at a time; `pairdeck watch <slug> --takeover` moves it. The profile's `agent` name is what replies
-show ("Claude:", "Codex:"); set it with `pairdeck setup --agent Codex`.
+The installer links the skill into all three folders, so one install serves Claude Code, Codex and Antigravity. In Antigravity,
+the user first lets `pairdeck` run outside its terminal sandbox (no network, workspace only) by adding `command(pairdeck)` and
+`write_file(<their home>/.pairdeck)` (and the same for any folder given to `pairdeck new --dir`) to Antigravity's Allow list;
+never change those permissions yourself ([why and
+where](https://github.com/MarcusYF/pairlab/blob/main/AGENTS.md#in-google-antigravity)). The user can switch agents at any time:
+the profile, the style guide and the decks' state live in the data home, `~/.pairdeck`, not in the agent. Only one session watches
+a given deck at a time; `pairdeck watch <slug> --takeover` moves it. The profile's `agent` name is what replies show ("Claude:",
+"Codex:", "Gemini:"); set it with `pairdeck setup --agent Codex`.
 
 ## Install PairDeck for the user
 
@@ -32,7 +37,7 @@ Ask the user only where a step says so, and keep each question short.
    `pairdeck card`; tell the user, and install it only if they say yes.
 2. **Get the code.** If you are not already in a clone, run `git clone https://github.com/MarcusYF/pairlab ~/pairlab`. Use
    another folder only if the user names one. To update later: `git -C ~/pairlab pull`.
-3. **Install.** Run `~/pairlab/install.sh pairdeck`. It links the skill for Claude Code and Codex and the CLI at
+3. **Install.** Run `~/pairlab/install.sh pairdeck`. It links the skill for Claude Code, Codex and Antigravity and the CLI at
    `~/.local/bin/pairdeck`. If `~/.local/bin` is not on the PATH, call `~/.local/bin/pairdeck` by its full path and give the
    user the line for their shell profile. Do not edit the shell profile unless they ask.
 4. **Ask two things, in one message:**
@@ -40,7 +45,7 @@ Ask the user only where a step says so, and keep each question short.
    - whether they have past decks to start the style guide from (folders or files: `.pptx`, `.pdf` exports, `.html` decks;
      Keynote files exported to PDF first), and which of them they made mostly themselves.
 
-   Then run `pairdeck setup --name "<their name>" --agent <your name: Claude, Codex, …>`.
+   Then run `pairdeck setup --name "<their name>" --agent <your name: Claude, Codex, Gemini, …>`.
 5. **Seed, if they gave decks:** `pairdeck seed <paths> --note "<what they are>"`, then follow `skill/references/seeding.md`:
    look at the page images and stats, draft `STYLE.md` entries, and show the user the five to ten strongest to keep, edit or
    delete. Seeding reads only the files the user named and writes only into the data home.
@@ -55,14 +60,17 @@ asking.
 
 ## Run the loop
 
-Read `skill/SKILL.md` and follow it; it is the full procedure (build, check, snapshot, review, watch, resolve, learn). Codex and
-Claude Code load it as the `pairdeck` skill. Two commands run for a long time:
+Read `skill/SKILL.md` and follow it; it is the full procedure (build, check, snapshot, review, watch, resolve, learn). Claude Code,
+Codex and Antigravity load it as the `pairdeck` skill. Two commands run for a long time:
 
 - `pairdeck review <slug>` serves the review page until stopped. Run it in the background (Claude Code: `run_in_background`;
-  elsewhere `nohup pairdeck review <slug> >/dev/null 2>&1 &`), and give the user the URL it prints (`pairdeck status <slug>`
-  shows it again).
+  Antigravity: a background command; elsewhere `nohup pairdeck review <slug> >/dev/null 2>&1 &`), and give the user the URL it
+  prints (`pairdeck status <slug>` shows it again).
 - `pairdeck watch <slug>` waits for feedback and exits with one batch. Use what your harness offers:
   - **You can run a command in the background and be woken when it exits** (Claude Code): run it that way.
+  - **Antigravity:** run it as a background command, then set a timer (the one behind `/schedule`, up to 30 minutes) whose
+    condition is that background task: the watcher's exit wakes you. If the timer fires first, set another. In goal mode (`/goal
+    watch <slug>`) you keep going between batches.
   - **You can wait on a long foreground command:** `pairdeck watch <slug> --max-hours 0.5`. Exit 0 prints a batch; exit 1
     means nothing arrived in that time: run it again.
   - **Your commands time out after a short while:** poll. `pairdeck watch <slug> --once` returns at once, with a batch (exit 0)

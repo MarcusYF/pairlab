@@ -2,6 +2,7 @@
 # Install PairPoster (macOS or Linux). Safe to rerun; an agent can run it unattended. The suite's ./install.sh pairposter runs it.
 #   - links the skill for Claude Code:  ~/.claude/skills/pairposter
 #   - links the skill for Codex and other agents that read the open agent-skills format:  ~/.agents/skills/pairposter
+#   - links the skill for Google Antigravity (App, CLI, IDE):  ~/.gemini/config/skills/pairposter
 #   - links the CLI as ~/.local/bin/pairposter (it runs on PairDeck's code in ../pairdeck, so keep the folders together)
 #   - checks Python and Chrome; nothing is downloaded
 # Then create your profile: pairposter setup --name "Your Name"
@@ -9,7 +10,7 @@ set -e
 APP="$(cd "$(dirname "$0")" && pwd)"
 [ -f "$APP/../pairdeck/bin/pairdeck" ] || { echo "missing: $APP/../pairdeck (PairPoster runs on PairDeck's code)"; exit 1; }
 chmod +x "$APP/bin/pairposter" "$APP/../pairdeck/bin/pairdeck"
-for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+for dir in "$HOME/.claude/skills" "$HOME/.agents/skills" "$HOME/.gemini/config/skills"; do
   mkdir -p "$dir"
   ln -sfn "$APP/skill" "$dir/pairposter"
   echo "linked $dir/pairposter -> $APP/skill"

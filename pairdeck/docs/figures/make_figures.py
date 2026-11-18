@@ -126,7 +126,7 @@ def loop(c: dict) -> str:
     # 2. the agent
     b.append(f'<rect x="340" y="70" width="290" height="178" rx="8" fill="{c["tool_soft"]}" stroke="{c["tool"]}" stroke-width="1.8"/>')
     b.append(t(485, 99, "Your agent + pairdeck", 17.5, c["tool"], "b", "middle"))
-    b.append(t(485, 119, "(Claude Code, Codex, …)", 14.5, c["ink2"], anchor="middle"))
+    b.append(t(485, 119, "(Claude Code, Codex, Antigravity, …)", 14.5, c["ink2"], anchor="middle"))
     for n, s in enumerate(["picks up the comment and box", "reads the slide and your style",
                            "edits the deck, screenshots it", "replies under your comment"]):
         b.append(f'<circle cx="358" cy="{146 + 25 * n}" r="3.5" fill="{c["tool"]}"/>' + t(370, 151 + 25 * n, s, 15))

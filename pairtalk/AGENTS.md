@@ -1,8 +1,8 @@
 # PairTalk for any coding agent
 
-This file is for coding agents: Claude Code, Codex, and any other agent that can run shell commands and edit files. It has
-three parts: which agent and plan to use, how to **install PairTalk for the user** without them typing anything but their
-answers, and how to run the loop.
+This file is for coding agents: Claude Code, Codex, Google Antigravity, and any other agent that can run shell commands and edit
+files. It has three parts: which agent and plan to use, how to **install PairTalk for the user** without them typing anything but
+their answers, and how to run the loop.
 
 ## Which agent, which plan
 
@@ -14,11 +14,16 @@ by the agent the user already runs, on the user's own plan:
 | --- | --- | --- |
 | Claude Code | a Claude subscription or an Anthropic API key | `~/.claude/skills/pairtalk` |
 | Codex (CLI, IDE extension, desktop app) | a ChatGPT plan or an OpenAI API key | `~/.agents/skills/pairtalk` |
+| Google Antigravity (App, CLI `agy`, IDE) | a Google AI plan or a Gemini API key | `~/.gemini/config/skills/pairtalk` |
 | Another agent that runs shell commands | its own | this file and `skill/SKILL.md` |
 
-The installer links the skill into both folders, so one install serves Claude Code and Codex. The user can switch agents at any
-time: the talks' settings, the inbox and the style guide live in the data home, `~/.pairtalk`, not in the agent. Only one
-session watches a given talk at a time; `pairtalk watch <talk> --takeover` moves it.
+The installer links the skill into all three folders, so one install serves Claude Code, Codex and Antigravity. In Antigravity,
+the user first lets `pairtalk` run outside its terminal sandbox (no network, workspace only) by adding `command(pairtalk)` and
+`write_file(<their home>/.pairtalk)` (and the same for talk folders outside the workspace) to Antigravity's Allow list; never
+change those permissions yourself ([why and
+where](https://github.com/MarcusYF/pairlab/blob/main/AGENTS.md#in-google-antigravity)). The user can switch agents at any time:
+the talks' settings, the inbox and the style guide live in the data home, `~/.pairtalk`, not in the agent. Only one session
+watches a given talk at a time; `pairtalk watch <talk> --takeover` moves it.
 
 ## Install PairTalk for the user
 
@@ -30,11 +35,11 @@ do the whole installation yourself. Follow these steps in order. Ask the user on
    missing.
 2. **Get the code.** If you are not already in a clone, run `git clone https://github.com/MarcusYF/pairlab ~/pairlab`. Use
    another folder only if the user names one. To update later, `git -C ~/pairlab pull`.
-3. **Install.** Run `~/pairlab/install.sh pairtalk` (or `~/pairlab/pairtalk/install.sh`). It links the skill for Claude Code
-   and Codex and links the CLI at `~/.local/bin/pairtalk`. Then run `npm install` once in `~/pairlab/pairtalk` (acorn and
-   Playwright from npm; no browser is downloaded). If the installer says
-   `~/.local/bin` is not on the PATH, call `~/.local/bin/pairtalk` by its full path, and give the user the line for their shell
-   profile. Do not edit the shell profile unless they ask.
+3. **Install.** Run `~/pairlab/install.sh pairtalk` (or `~/pairlab/pairtalk/install.sh`). It links the skill for Claude Code,
+   Codex and Antigravity and links the CLI at `~/.local/bin/pairtalk`. Then run `npm install` once in `~/pairlab/pairtalk` (acorn
+   and Playwright from npm; no browser is downloaded). If the installer says `~/.local/bin` is not on the PATH, call
+   `~/.local/bin/pairtalk` by its full path, and give the user the line for their shell profile. Do not edit the shell profile
+   unless they ask.
 4. **Ask two things, in one message:** their name as coauthors see it on comments (only comments and edits under this name
    teach their style guide), and whether they have a talk to start (its title, slot in minutes, and the paper or results it
    presents) or want to try the demo first. Then run `pairtalk setup --name "<their name>" --agent <your name>`.
@@ -54,10 +59,13 @@ cookie secret or tokens; Wrangler asks the user for them.
 
 ## Run the loop
 
-Read `skill/SKILL.md` and follow it; it is the full procedure. Codex and Claude Code load it as the `pairtalk` skill. Where it
-says to start the watcher "in the background", use what your harness offers:
+Read `skill/SKILL.md` and follow it; it is the full procedure. Claude Code, Codex and Antigravity load it as the `pairtalk` skill.
+Where it says to start the watcher "in the background", use what your harness offers:
 
 - **You can run a command in the background and be woken when it exits** (Claude Code): run `pairtalk watch <talk>` that way.
+- **Antigravity:** run it as a background command, then set a timer (the one behind `/schedule`, up to 30 minutes) whose condition
+  is that background task: the watcher's exit wakes you. If the timer fires first, set another. In goal mode (`/goal watch
+  <talk>`) you keep going between batches.
 - **You can wait on a long foreground command:** run `pairtalk watch <talk> --max-hours 0.5`. Exit 0 prints a batch; exit 1
   means nothing arrived in that time: run it again.
 - **Your commands time out after a short while:** poll instead. `pairtalk watch <talk> --once` returns at once, with a batch

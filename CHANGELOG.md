@@ -3,6 +3,19 @@
 PairLab's releases. Each tool keeps its own detailed changelog: [PairDeck](pairdeck/CHANGELOG.md),
 [PairTeX](pairtex/CHANGELOG.md), [PairTalk](pairtalk/CHANGELOG.md).
 
+## 0.4.0 (2026-11-18)
+
+Google Antigravity joins Claude Code and Codex (PairDeck 0.2.1, PairTeX 0.5.1, PairTalk 0.1.1, PairPoster 0.2.1).
+- **One install, three agents.** Each tool's installer also links its skill at `~/.gemini/config/skills/<tool>`, the global
+  skill folder that Antigravity's App, CLI (`agy`) and IDE all read; the skill then runs as a slash command (`/pairdeck`,
+  `/pairtex`, ...).
+- **Antigravity's terminal sandbox.** Under its default presets, commands run without network and see only the workspace,
+  while every tool needs its data home, git remotes, Chrome or a local server. `AGENTS.md` gives the Allow rules the user adds
+  once (`command(<tool>)`, `write_file(<home>/.<tool>)`); agents never change those permissions themselves.
+- **Waiting for feedback in Antigravity.** The watcher runs as a background command with a timer whose condition is that task,
+  so its exit wakes the agent; `/goal watch <slug>` keeps the loop going between batches. Each skill and `AGENTS.md` says so.
+- This follows Antigravity's documentation as of 2026-11-18; it has not yet been tried in a live Antigravity session.
+
 ## 0.3.0 (2026-11-15)
 
 - **Ask about any part (PairDeck 0.2.0, PairPoster 0.2.0).** The review page has **Ask** (or `q`) beside **Comment**: box a

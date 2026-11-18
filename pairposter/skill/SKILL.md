@@ -31,7 +31,7 @@ skill's folder. `$PP <command> -h` lists the options. This skill works in any ag
 | `projects/<slug>/` | Per poster: `project.json` (where it lives), `NOTES.md`, `comments.jsonl`, snapshots, `qa/` screenshots |
 | `references/` | `poster.md`, `components.md`, `qa.md`, `learning.md`, `seeding.md` |
 
-No profile yet: ask the author's name and run `$PP setup --name "…" --agent <your name: Claude, Codex, …>`.
+No profile yet: ask the author's name and run `$PP setup --name "…" --agent <your name: Claude, Codex, Gemini, …>`.
 
 ## Before every poster
 
@@ -58,10 +58,10 @@ No profile yet: ask the author's name and run `$PP setup --name "…" --agent <y
 4. **Write the poster** with the engine's components (`references/components.md`). Draw charts as inline SVG from the real
    numbers, with viewBox units in millimetres so type sizes are easy to control. Set the venue size and the word budgets in
    `<meta name="pairposter">` from the style guide.
-5. **Check it:** `$PP qa <slug>`. It measures the laid-out poster in Chrome (overflow, type below the floor, words per block
-   and in all, sentences, image dpi, empty space) and takes the whole poster plus close-ups (`--grid 3x2`). Fix every ERROR.
-   Treat warnings as the style guide does. **Open and look at the whole poster and every close-up** (Claude Code: the Read
-   tool; Codex: `view_image`) and go through `references/qa.md`. Repeat until clean, then check the facts once more.
+5. **Check it:** `$PP qa <slug>`. It measures the laid-out poster in Chrome (overflow, type below the floor, words per block and
+   in all, sentences, image dpi, empty space) and takes the whole poster plus close-ups (`--grid 3x2`). Fix every ERROR. Treat
+   warnings as the style guide does. **Open and look at the whole poster and every close-up** (Claude Code: the Read tool; Codex:
+   `view_image`; Antigravity: open the PNG) and go through `references/qa.md`. Repeat until clean, then check the facts once more.
 6. **Snapshot:** `$PP snapshot <slug> -m "first build"`.
 7. **Show it.** Start `$PP review <slug>` in the background and give the author its URL. Say in two lines how to comment:
    zoom with + and − (0 fits, 1 is print size), press **Comment** (or `c`) to ask for a change or **Ask** (or `q`) to ask a
@@ -74,8 +74,9 @@ Start it when the author asks ("watch my poster", or yes to your offer):
 1. `$PP status <slug>`. Handle comments still "with the agent" from an earlier session first.
 2. Make sure the review page runs (`$PP review <slug>` in the background).
 3. Start the watcher **in the background, so that its exit wakes you**: `$PP watch <slug>` (Claude Code: the Bash tool with
-   `run_in_background: true`). One watcher per poster; `--takeover` only when the author moves the loop to this session. An
-   agent that cannot be woken by a background command polls `$PP watch <slug> --once` every 30 to 60 seconds.
+   `run_in_background: true`; Antigravity: a background command and a timer whose condition is that task). One watcher per poster;
+   `--takeover` only when the author moves the loop to this session. An agent that cannot be woken by a background command polls
+   `$PP watch <slug> --once` every 30 to 60 seconds.
 4. Tell the author in one line that you are watching, and where the review page is.
 
 **Changes asked for in chat** (not on the review page), while the loop runs: stop the background watcher first, make the
@@ -125,6 +126,11 @@ uploading them to a venue needs the author's explicit go-ahead.
 - **Claude Code.** Run `review` and `watch` with `run_in_background: true`. To look at the poster interactively, open the
   review URL in the browser pane (`preview_start` with the URL).
 - **Codex.** Look at screenshots with `view_image`. Invocation: `$pairposter`.
+- **Antigravity.** Its terminal sandbox has no network and sees only the workspace, so the author allows `pairposter` outside
+  it first (`command(pairposter)` and `write_file` for the data home, in Antigravity's Allow list; the suite's `AGENTS.md`).
+  Never change those permissions yourself. Run `review` and `watch` as background commands; after starting the watcher, set
+  a timer (the one behind `/schedule`, up to 30 minutes) whose condition is the watcher's task, so its exit wakes you.
+  Invocation: `/pairposter`.
 
 ## Stop
 

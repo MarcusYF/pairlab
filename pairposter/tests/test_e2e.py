@@ -73,7 +73,7 @@ def main() -> int:
 
     print("cli")
     out = pp("--version")
-    ok(out.strip() == "pairposter 0.2.0", "pairposter --version names the poster flavour")
+    ok(out.strip() == "pairposter 0.2.1", "pairposter --version names the poster flavour")
     out = pp("--help")
     ok(" print " in out or "print," in out, "the help lists print")
     cmds = set(re.search(r"\{([a-z,]+)\}", out).group(1).split(","))

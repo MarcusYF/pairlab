@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.1 (2026-11-18)
+
+- **Works in Google Antigravity** (the App, the CLI `agy`, the IDE). The installer also links the skill at
+  `~/.gemini/config/skills/pairtalk`, the global skill folder all three read; it then runs as `/pairtalk`. `AGENTS.md` and
+  the skill say how the user allows `pairtalk` outside Antigravity's terminal sandbox (no network, workspace only) with
+  `command(pairtalk)` and `write_file(<home>/.pairtalk)` in its Allow list, and how to wait for feedback there: the watcher as
+  a background command plus a timer whose condition is that task, or `/goal watch <slug>`.
+  This follows Antigravity's documentation as of 2026-11-18; it has not yet been tried in a live Antigravity session.
+
 ## 0.1.0 (2026-11-12)
 
 First version: talk slides as HTML, a comment loop with your coding agent, and a talk-style guide that learns from you.

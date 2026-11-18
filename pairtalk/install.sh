@@ -2,13 +2,14 @@
 # Install PairTalk (macOS or Linux). Safe to rerun; an agent can run it unattended. The suite's ./install.sh pairtalk runs it.
 #   - links the skill for Claude Code:  ~/.claude/skills/pairtalk
 #   - links the skill for Codex and other agents that read the open agent-skills format:  ~/.agents/skills/pairtalk
+#   - links the skill for Google Antigravity (App, CLI, IDE):  ~/.gemini/config/skills/pairtalk
 #   - links the CLI as ~/.local/bin/pairtalk
 #   - checks Python, git, Node and Chrome; nothing is downloaded (the deck tools' packages: npm install, once, here)
 # Then create your profile: pairtalk setup --name "Your Name"
 set -e
 APP="$(cd "$(dirname "$0")" && pwd)"
 chmod +x "$APP/bin/pairtalk"
-for dir in "$HOME/.claude/skills" "$HOME/.agents/skills"; do
+for dir in "$HOME/.claude/skills" "$HOME/.agents/skills" "$HOME/.gemini/config/skills"; do
   mkdir -p "$dir"
   ln -sfn "$APP/skill" "$dir/pairtalk"
   echo "linked $dir/pairtalk -> $APP/skill"

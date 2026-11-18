@@ -1,14 +1,18 @@
 # PairPoster for any coding agent
 
-For coding agents: Claude Code, Codex, and any other agent that runs shell commands and edits files.
+For coding agents: Claude Code, Codex, Google Antigravity, and any other agent that runs shell commands and edits files.
 
 ## Which agent, which plan
 
 `pairposter` has no model and no API key. It is a command-line tool (Python 3.9+, git, Chrome or Chromium) plus a skill; the
 thinking is done by the agent the user already runs, on their own plan. The installer links the skill into
-`~/.claude/skills/pairposter` (Claude Code) and `~/.agents/skills/pairposter` (Codex and others). The profile, the style
-guide and the posters' state live in `~/.pairposter`, so the user can switch agents at any time. PairPoster runs on
-PairDeck's code (`../pairdeck`), so the two folders stay together.
+`~/.claude/skills/pairposter` (Claude Code), `~/.agents/skills/pairposter` (Codex and others) and
+`~/.gemini/config/skills/pairposter` (Google Antigravity). In Antigravity, the user first lets `pairposter` run outside its
+terminal sandbox (no network, workspace only) by adding `command(pairposter)` and `write_file(<their home>/.pairposter)` to
+Antigravity's Allow list; never change those permissions yourself ([why and
+where](https://github.com/MarcusYF/pairlab/blob/main/AGENTS.md#in-google-antigravity)). The profile, the style guide and the
+posters' state live in `~/.pairposter`, so the user can switch agents at any time. PairPoster runs on PairDeck's code
+(`../pairdeck`), so the two folders stay together.
 
 ## Install for the user
 
@@ -23,7 +27,7 @@ PairDeck's code (`../pairdeck`), so the two folders stay together.
 
 ## Run it
 
-Follow `skill/SKILL.md`: build (`new`, write, `qa`, look at the screenshots, `snapshot`), show (`review`), loop (`watch` in
-the background, `resolve`, `qa`, `snapshot`, `learn`), and print (`print`). Starting the loop at the user's request
-authorizes edits to that poster only; printing services, uploads to a venue and sending files need the user's explicit
-go-ahead.
+Follow `skill/SKILL.md`: build (`new`, write, `qa`, look at the screenshots, `snapshot`), show (`review`), loop (`watch` in the
+background: in Antigravity a background command and a timer whose condition is that task, `resolve`, `qa`, `snapshot`, `learn`),
+and print (`print`). Starting the loop at the user's request authorizes edits to that poster only; printing services, uploads to a
+venue and sending files need the user's explicit go-ahead.

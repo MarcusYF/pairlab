@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 (2026-11-18)
+
+- **Works in Google Antigravity** (the App, the CLI `agy`, the IDE). The installer also links the skill at
+  `~/.gemini/config/skills/pairdeck`, the global skill folder all three read; it then runs as `/pairdeck`. `AGENTS.md` and
+  the skill say how the user allows `pairdeck` outside Antigravity's terminal sandbox (no network, workspace only) with
+  `command(pairdeck)` and `write_file(<home>/.pairdeck)` in its Allow list, and how to wait for feedback there: the watcher as
+  a background command plus a timer whose condition is that task, or `/goal watch <slug>`.
+  This follows Antigravity's documentation as of 2026-11-18; it has not yet been tried in a live Antigravity session.
+
 ## 0.2.0 (2026-11-15)
 
 - **Ask about any part.** The review page has **Ask** (or `q`) beside **Comment** (or `c`). Box a part of a slide and type a

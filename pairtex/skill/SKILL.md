@@ -15,7 +15,8 @@ pairtex paths       # the CLI, on PATH via ~/.local/bin after install.sh; where 
 
 Below, `$PT` stands for the CLI: `pairtex`, or `~/.local/bin/pairtex` when it is not on PATH, or `bin/pairtex` next to this
 skill's folder (`ow` is its old name). `$PT <command> -h` lists the options. The skill works in any agent that reads
-`SKILL.md` files (Claude Code, Codex, ...); where a step depends on the agent, it says so.
+`SKILL.md` files (Claude Code, Codex, Antigravity, ...); where a step depends on the agent, it says so. In Antigravity the
+author first allows `pairtex` outside the terminal sandbox, which has no network (`AGENTS.md`).
 
 | Path (`pairtex paths`) | What it is |
 | --- | --- |
@@ -70,9 +71,10 @@ own edits and closed threads are style evidence.
    (`references/seeding.md`); start the loop either way.
 3. **Finish leftovers.** If status says "to finish first", run `$PT show <slug>` and handle those comments (step 2 below) first.
 4. **Start the watcher** in the background, so that its exit wakes you: `$PT watch <slug>` (in Claude Code, the Bash tool with
-   `run_in_background: true`). An agent that cannot be woken by a background command runs `$PT watch <slug> --max-hours 0.5` in
-   the foreground, or polls `$PT watch <slug> --once` every 30 to 60 seconds (`AGENTS.md` in the repository). It holds a lock, so
-   only one session watches a project on this machine. Use `--takeover` only when the author moves the loop to this session.
+   `run_in_background: true`; in Antigravity: a background command and a timer whose condition is that task). An agent that cannot
+   be woken by a background command runs `$PT watch <slug> --max-hours 0.5` in the foreground, or polls `$PT watch <slug> --once`
+   every 30 to 60 seconds (`AGENTS.md` in the repository). It holds a lock, so only one session watches a project on this machine.
+   Use `--takeover` only when the author moves the loop to this session.
 5. **Tell the author** in two lines: which project and file you are watching, and how to comment (`%! … ..` to change, `%? … ..`
    to ask, `[[ ]]` around the words meant; `..` sends it). For a folder: save the file to send a comment, and let the editor reload
    files changed on disk (VS Code does; Emacs needs `global-auto-revert-mode`).

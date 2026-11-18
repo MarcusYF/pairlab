@@ -51,8 +51,8 @@ git clone https://github.com/MarcusYF/pairlab && cd pairlab
 pairposter setup --name "Ada Lovelace"
 ```
 
-Then, in Claude Code or Codex: *"make a poster for this paper, 140 × 90 cm landscape"* or *"turn my Beamer poster into a
-PairPoster and cut the words"*, and later *"watch my poster"*.
+Then, in Claude Code, Codex or Antigravity: *"make a poster for this paper, 140 × 90 cm landscape"* or *"turn my Beamer poster
+into a PairPoster and cut the words"*, and later *"watch my poster"*.
 
 | Needs | Feedback lives in | Data home |
 | --- | --- | --- |

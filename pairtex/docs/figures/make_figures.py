@@ -101,7 +101,7 @@ def loop(c: dict) -> str:
     # 2. the agent
     b.append(f'<rect x="340" y="70" width="282" height="178" rx="8" fill="{c["tool_soft"]}" stroke="{c["tool"]}" stroke-width="1.8"/>')
     b.append(t(481, 99, "Your agent + pairtex", 17.5, c["tool"], "b", "middle"))
-    b.append(t(481, 119, "(Claude Code, Codex, …)", 14.5, c["ink2"], anchor="middle"))
+    b.append(t(481, 119, "(Claude Code, Codex, Antigravity, …)", 14.5, c["ink2"], anchor="middle"))
     for n, s in enumerate(["picks up the comment", "reads the text and your style", "edits the .tex, writes a reply",
                            "compile-checks, publishes"]):
         b.append(f'<circle cx="358" cy="{146 + 25 * n}" r="3.5" fill="{c["tool"]}"/>' + t(370, 151 + 25 * n, s, 15))
@@ -306,7 +306,7 @@ def features(c: dict) -> str:
          ['<tspan class="b">Overleaf</tspan>, through its git integration',
           '<tspan class="b">GitHub, GitLab</tspan> or any git remote',
           '<tspan class="b">A local folder</tspan>: VS Code, TeXstudio, Emacs',
-          '<tspan class="b">Any agent</tspan>: Claude Code, Codex, …']),
+          '<tspan class="b">Any agent</tspan>: Claude Code, Codex, Antigravity']),
         ("people", "tool", "Several authors, several loops",
          ["Each loop answers only its owner’s comments",
           f'Ids carry the owner’s prefix: <tspan class="m" style="fill:{c["tool"]}">ada7</tspan>, '

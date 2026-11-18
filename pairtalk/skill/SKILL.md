@@ -15,7 +15,8 @@ pairtalk paths       # the CLI, on PATH via ~/.local/bin after install.sh; where
 ```
 
 Below, `$PT` stands for the CLI: `pairtalk`, or `~/.local/bin/pairtalk`, or `bin/pairtalk` next to this skill's folder.
-`$PT <command> -h` lists the options. The skill works in any agent that reads `SKILL.md` files (Claude Code, Codex, ...).
+`$PT <command> -h` lists the options. The skill works in any agent that reads `SKILL.md` files (Claude Code, Codex, Antigravity,
+...). In Antigravity the author first allows `pairtalk` outside the terminal sandbox (the suite's `AGENTS.md`).
 
 | Path (`pairtalk paths`) | What it is |
 | --- | --- |
@@ -86,10 +87,11 @@ Deck.slide({
 3. **Make sure the author can comment.** On their computer: ask them to run `pairtalk serve <talk>` in a terminal (or run it
    yourself in the background) and open the address it prints. For coauthors elsewhere: the shared site
    (`references/cloudflare.md`).
-4. **Start the watcher in the background**, so that its exit wakes you: `$PT watch <talk>` (`--remote` for the shared site;
-   in Claude Code, the Bash tool with `run_in_background: true`). An agent that cannot be woken by a background command runs
-   `$PT watch <talk> --max-hours 0.5` in the foreground, or polls `$PT watch <talk> --once` every 30 to 60 seconds
-   (`AGENTS.md`). It holds a lock, so only one session watches a talk; `--takeover` moves it here.
+4. **Start the watcher in the background**, so that its exit wakes you: `$PT watch <talk>` (`--remote` for the shared site; in
+   Claude Code, the Bash tool with `run_in_background: true`; in Antigravity: a background command and a timer whose condition is
+   that task). An agent that cannot be woken by a background command runs `$PT watch <talk> --max-hours 0.5` in the foreground, or
+   polls `$PT watch <talk> --once` every 30 to 60 seconds (`AGENTS.md`). It holds a lock, so only one session watches a talk;
+   `--takeover` moves it here.
 5. **Tell the author** in two lines: which talk you are watching, and how to comment.
 
 **Authorization.** Starting the loop at the author's request authorizes edits to that talk's folder and replies to the

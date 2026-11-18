@@ -33,10 +33,10 @@ colour or custom property is used.
 
 ## Then draft entries
 
-1. **Look**, in this order: the page images (open them: Claude Code's Read tool, Codex's `view_image`), `stats.json`,
-   `samples.md`. Note what recurs across decks: background and text colours, one or two accents and what they mark, typefaces for
-   titles and body, title length and form (a claim or a topic), words per slide, how much is picture versus text, chart style,
-   how slides open and close, how builds are paced (HTML).
+1. **Look**, in this order: the page images (open them: Claude Code's Read tool, Codex's `view_image`, or open the PNG in
+   Antigravity), `stats.json`, `samples.md`. Note what recurs across decks: background and text colours, one or two accents and
+   what they mark, typefaces for titles and body, title length and form (a claim or a topic), words per slide, how much is picture
+   versus text, chart style, how slides open and close, how builds are paced (HTML).
 2. **Draft entries in `STYLE.md`** (`references/learning.md` for the forms):
    - each seeded file is one independent piece of evidence;
    - a pattern clear in **three or more** seeded files may enter as a confirmed rule, its evidence line saying `(seed)` and

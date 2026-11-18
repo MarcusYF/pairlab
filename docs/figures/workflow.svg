@@ -57,5 +57,5 @@
 <text x="30" y="403" font-size="15.5">seeded from your own papers, decks, talks and posters; grows with every edit you keep, rewrite or undo</text>
 <text x="1220" y="377" font-size="14.5" text-anchor="end" style="fill:#6D5398">read before every piece of work</text>
 <rect x="10" y="436" width="1220" height="44" rx="10" fill="#F3EEF8" stroke="#6D5398" stroke-width="1.6"/>
-<text x="620" y="464" font-size="16" text-anchor="middle"><tspan class="b" style="fill:#6D5398">Your agent</tspan> does the thinking: Claude Code, Codex, or any agent that runs shell commands, on your own plan</text>
+<text x="620" y="464" font-size="16" text-anchor="middle"><tspan class="b" style="fill:#6D5398">Your agent</tspan> does the thinking: Claude Code, Codex, Antigravity or any agent that runs shell commands, on your own plan</text>
 </svg>

@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-27709C" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/version-0.5.0-C6952C" alt="version 0.5.0">
+  <img src="https://img.shields.io/badge/version-0.5.1-C6952C" alt="version 0.5.1">
   <img src="https://img.shields.io/badge/python-3.9%2B-6D5398" alt="Python 3.9+">
   <img src="https://img.shields.io/badge/works%20with-Overleaf%20%C2%B7%20git%20%C2%B7%20any%20editor-227828" alt="works with Overleaf, git and any editor">
 </p>
@@ -82,12 +82,13 @@ and with any agent; coauthors each keep their own, learned only from their own e
 
 ## Use it with the agent you already have
 
-PairTeX has no model and needs no API key of its own. It runs inside the coding agent you already use, on your own plan:
-**Claude Code** (a Claude subscription or API key) or **Codex** (a ChatGPT plan or OpenAI API key), or any other agent that runs
-shell commands. One install serves both; switch whenever you like, since your style guide and papers live in `~/.pairtex`, not
-in the agent.
+PairTeX has no model and needs no API key of its own. It runs inside the coding agent you already use, on your own plan: **Claude
+Code** (a Claude subscription or API key), **Codex** (a ChatGPT plan or OpenAI API key) or **Google Antigravity** (a Google AI
+plan or Gemini API key), or any other agent that runs shell commands. One install serves all three (in Antigravity, allow
+`pairtex` outside its terminal sandbox first, [AGENTS.md](AGENTS.md)); switch whenever you like, since your style guide and papers
+live in `~/.pairtex`, not in the agent.
 
-**Let your agent install it.** Paste this into Claude Code or Codex:
+**Let your agent install it.** Paste this into Claude Code, Codex or Antigravity:
 
 ```text
 Install PairTeX from https://github.com/MarcusYF/pairlab and follow pairtex/AGENTS.md
@@ -105,8 +106,8 @@ pairtex init mypaper --overleaf 6a1b2c3d4e5f --main main.tex                  # 
 pairtex seed ~/papers/solo-paper-1 ~/papers/solo-paper-2.pdf                  #    optional: start your style guide from them
 ```
 
-3. In Claude Code or Codex, in any folder, say **"watch mypaper"**. That session becomes the paper's coauthor: it reads your
-   style guide, starts the watcher and answers each comment as it arrives. Other agents: [AGENTS.md](AGENTS.md).
+3. In Claude Code, Codex or Antigravity, in any folder, say **"watch mypaper"**. That session becomes the paper's coauthor: it
+   reads your style guide, starts the watcher and answers each comment as it arrives. Other agents: [AGENTS.md](AGENTS.md).
 
 The rest of this page is the reference: every option, the comment rules in full, and what goes where.
 
@@ -116,7 +117,7 @@ Needs Python 3.9+, git, and for the compile check latexmk (TeX Live or MacTeX). 
 
 ```sh
 git clone https://github.com/MarcusYF/pairlab && cd pairlab
-./install.sh pairtex                # links the skill for Claude Code and Codex, and ~/.local/bin/pairtex
+./install.sh pairtex                # links the skill for Claude Code, Codex and Antigravity, and ~/.local/bin/pairtex
 pairtex setup --name "Ada Lovelace"      # your name exactly as Overleaf (or your git commits) shows it to coauthors
 ```
 
@@ -150,9 +151,9 @@ taken from a `% !TEX program = …` line or a `latexmkrc`, else pdfLaTeX). Then 
 
 ## Start the loop
 
-In Claude Code or Codex, in any folder: "watch mypaper" (or 监听 mypaper). That session becomes the paper's coauthor: it reads your style
-guide, starts the watcher in the background and tells you it is listening. One session per paper; to move the loop, ask another
-session to take it over.
+In Claude Code, Codex or Antigravity, in any folder: "watch mypaper" (or 监听 mypaper). That session becomes the paper's coauthor:
+it reads your style guide, starts the watcher in the background and tells you it is listening. One session per paper; to move the
+loop, ask another session to take it over.
 
 ## Comment
 
@@ -299,7 +300,7 @@ commit, the loop takes them as the edits of the person that commit names.
 | Path | Purpose |
 | --- | --- |
 | `bin/pairtex` | The command-line tool (Python 3.9+, standard library, git, latexmk); `bin/ow` is its old name |
-| `skill/` | The agent skill, linked at `~/.claude/skills/pairtex` (Claude Code) and `~/.agents/skills/pairtex` (Codex) by `install.sh` |
+| `skill/` | The agent skill, linked at `~/.claude/skills/pairtex` (Claude Code), `~/.agents/skills/pairtex` (Codex) and `~/.gemini/config/skills/pairtex` (Antigravity) by `install.sh` |
 | `AGENTS.md` | For agents: which agent and plan, installing PairTeX for the user, running the loop |
 | `templates/` | Starting points for a new style guide, loop preferences and paper notes |
 | `tests/test_e2e.py` | End-to-end test against local stand-ins for Overleaf, a git remote and a folder: `python3 tests/test_e2e.py` |

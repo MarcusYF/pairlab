@@ -81,7 +81,7 @@ def workflow(c: dict) -> str:
     b.append(t(1220, 377, "read before every piece of work", 14.5, c["tool"], anchor="end"))
     b.append(f'<rect x="10" y="436" width="1220" height="44" rx="10" fill="{c["tool_soft"]}" stroke="{c["tool"]}" stroke-width="1.6"/>')
     b.append(f'<text x="620" y="464" font-size="16" text-anchor="middle"><tspan class="b" style="fill:{c["tool"]}">Your agent</tspan>'
-             f' does the thinking: Claude Code, Codex, or any agent that runs shell commands, on your own plan</text>')
+             f' does the thinking: Claude Code, Codex, Antigravity or any agent that runs shell commands, on your own plan</text>')
     return svg(1240, 488, "Four moments of research, four tools: PairDeck reports what you found, PairTeX writes the paper, "
                "PairTalk gives the talk, PairPoster pitches it on a poster. Each keeps a style vault, seeded from your own work "
                "and grown from your feedback, and runs in the coding agent you already use", "\n".join(b), c)

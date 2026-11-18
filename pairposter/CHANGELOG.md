@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 (2026-11-18)
+
+- **Works in Google Antigravity** (the App, the CLI `agy`, the IDE). The installer also links the skill at
+  `~/.gemini/config/skills/pairposter`, the global skill folder all three read; it then runs as `/pairposter`. `AGENTS.md` and
+  the skill say how the user allows `pairposter` outside Antigravity's terminal sandbox (no network, workspace only) with
+  `command(pairposter)` and `write_file(<home>/.pairposter)` in its Allow list, and how to wait for feedback there: the watcher as
+  a background command plus a timer whose condition is that task, or `/goal watch <slug>`.
+  This follows Antigravity's documentation as of 2026-11-18; it has not yet been tried in a live Antigravity session.
+
 ## 0.2.0 (2026-11-15)
 
 - **Ask about any part.** The review page (PairDeck's, shared) has **Ask** (or `q`) beside **Comment**: box a part of the

@@ -11,9 +11,9 @@
 
 <p align="center">
   <a href="../LICENSE"><img src="https://img.shields.io/badge/license-MIT-27709C" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/version-0.2.0-C6952C" alt="version 0.2.0">
+  <img src="https://img.shields.io/badge/version-0.2.1-C6952C" alt="version 0.2.1">
   <img src="https://img.shields.io/badge/python-3.9%2B-6D5398" alt="Python 3.9+">
-  <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Chrome-227828" alt="works with Claude Code, Codex and Chrome">
+  <img src="https://img.shields.io/badge/works%20with-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Antigravity%20%C2%B7%20Chrome-227828" alt="works with Claude Code, Codex, Antigravity and Chrome">
 </p>
 
 You give your agent the material (a paper, a project, the results of an investigation) and it builds a short web deck that
@@ -121,11 +121,13 @@ delete.
 
 ## Use it with the agent you already have
 
-PairDeck has no model and needs no API key of its own. It runs inside the coding agent you already use, on your own plan:
-**Claude Code** (a Claude subscription or API key) or **Codex** (a ChatGPT plan or OpenAI API key), or any other agent that runs
-shell commands. One install serves both; your style guide and decks live in `~/.pairdeck`, not in the agent.
+PairDeck has no model and needs no API key of its own. It runs inside the coding agent you already use, on your own plan: **Claude
+Code** (a Claude subscription or API key), **Codex** (a ChatGPT plan or OpenAI API key) or **Google Antigravity** (a Google AI
+plan or Gemini API key), or any other agent that runs shell commands. One install serves all three (in Antigravity, allow
+`pairdeck` outside its terminal sandbox first: [AGENTS.md](../AGENTS.md#in-google-antigravity)); your style guide and decks live
+in `~/.pairdeck`, not in the agent.
 
-**Let your agent install it.** Paste this into Claude Code or Codex:
+**Let your agent install it.** Paste this into Claude Code, Codex or Antigravity:
 
 ```text
 Install PairDeck from https://github.com/MarcusYF/pairlab and follow pairdeck/AGENTS.md
@@ -139,9 +141,9 @@ pairdeck setup --name "Ada Lovelace"                                            
 pairdeck seed ~/talks/ ~/exports/old-deck.pdf                                     # 2. optional: your past decks
 ```
 
-3. In Claude Code or Codex, say **"make a visual explainer of this paper with pairdeck"** (or of a project, a concept, your
-   findings). The agent builds and checks the deck, opens the review page, and on "watch the deck" answers each comment as it
-   arrives. Other agents: [AGENTS.md](AGENTS.md).
+3. In Claude Code, Codex or Antigravity, say **"make a visual explainer of this paper with pairdeck"** (or of a project, a
+   concept, your findings). The agent builds and checks the deck, opens the review page, and on "watch the deck" answers each
+   comment as it arrives. Other agents: [AGENTS.md](AGENTS.md).
 
 The rest of this page is the reference.
 

@@ -8,7 +8,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-27709C" alt="MIT license"></a>
   <img src="https://img.shields.io/badge/tools-PairDeck%20%C2%B7%20PairTeX%20%C2%B7%20PairTalk%20%C2%B7%20PairPoster-C6952C" alt="four tools: PairDeck, PairTeX, PairTalk, PairPoster">
-  <img src="https://img.shields.io/badge/runs%20in-Claude%20Code%20%C2%B7%20Codex-6D5398" alt="runs in Claude Code or Codex">
+  <img src="https://img.shields.io/badge/runs%20in-Claude%20Code%20%C2%B7%20Codex%20%C2%B7%20Antigravity-6D5398" alt="runs in Claude Code, Codex or Antigravity">
   <img src="https://img.shields.io/badge/no-API%20key-227828" alt="no API key">
 </p>
 
@@ -38,8 +38,8 @@ present, so each round needs fewer comments than the last.
   baseline. The answer appears under your question, and nothing changes until you ask for it.
 - **You stay in charge.** Press **Keep**, **Follow up**, or edit the thing yourself: your own edits are read as yours and
   kept. Coauthors can comment too; their comments are answered, not learned from.
-- **On the agent you already use.** Claude Code or Codex does the thinking, on your own plan. There is no PairLab server,
-  model or API key.
+- **On the agent you already use.** Claude Code, Codex or Google Antigravity does the thinking, on your own plan. There is no
+  PairLab server, model or API key.
 
 ## Adaptive: it learns your style
 
@@ -128,7 +128,7 @@ prints the one-page vector PDF for the print shop and the PNG the venue's site a
 
 ## Install
 
-**Let your agent install it.** Paste this into Claude Code or Codex:
+**Let your agent install it.** Paste this into Claude Code, Codex or Antigravity:
 
 ```text
 Install PairLab from https://github.com/MarcusYF/pairlab and follow its AGENTS.md
@@ -136,6 +136,8 @@ Install PairLab from https://github.com/MarcusYF/pairlab and follow its AGENTS.m
 
 It asks which tools you want, installs them, asks your name, and offers to seed each style guide from your own work. You
 store credentials (an Overleaf token, a Cloudflare login) yourself, once, in your own terminal: the agent never sees them.
+In Antigravity you also add a few Allow rules, once, so the tools can run outside its terminal sandbox
+([AGENTS.md](AGENTS.md#in-google-antigravity) lists them).
 
 **Or yourself:**
 
@@ -146,8 +148,8 @@ pairtex setup --name "Ada Lovelace"
 pairtex seed ~/papers/a ~/papers/b.pdf   # optional: your style, from your papers
 ```
 
-Then, in Claude Code or Codex, say what you want: *"watch mypaper"*, *"make a deck that explains this result"*, *"draft my
-talk from these slides"*, *"make a 140 × 90 cm poster for this paper"*. Each tool's page has its three-step start.
+Then, in Claude Code, Codex or Antigravity, say what you want: *"watch mypaper"*, *"make a deck that explains this result"*,
+*"draft my talk from these slides"*, *"make a 140 × 90 cm poster for this paper"*. Each tool's page has its three-step start.
 
 | Tool | Needs | Feedback lives in | Data home |
 | --- | --- | --- | --- |

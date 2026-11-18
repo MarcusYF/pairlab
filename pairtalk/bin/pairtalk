@@ -41,7 +41,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 APP = Path(__file__).resolve().parent.parent
 SUITE = APP.parent
 TEMPLATES = APP / "templates"

@@ -17,7 +17,7 @@
 <path d="M306,159 L334,159" stroke="#6B6B6B" stroke-width="2" fill="none" marker-end="url(#a)"/>
 <rect x="340" y="62" width="282" height="196" rx="8" fill="#F3EEF8" stroke="#6D5398" stroke-width="1.8"/>
 <text x="481" y="91" font-size="17.5" class="b" text-anchor="middle" style="fill:#6D5398">Your agent + pairtalk</text>
-<text x="481" y="111" font-size="14.5" text-anchor="middle" style="fill:#6B6B6B">(Claude Code, Codex, …)</text>
+<text x="481" y="111" font-size="14.5" text-anchor="middle" style="fill:#6B6B6B">(Claude Code, Codex, Antigravity, …)</text>
 <circle cx="358" cy="136" r="3.5" fill="#6D5398"/><text x="370" y="141" font-size="15">gets the slide, click and box</text>
 <circle cx="358" cy="160" r="3.5" fill="#6D5398"/><text x="370" y="165" font-size="15">reads your talk style</text>
 <circle cx="358" cy="184" r="3.5" fill="#6D5398"/><text x="370" y="189" font-size="15">edits the slide and the script</text>
